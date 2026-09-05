@@ -41,22 +41,10 @@ this repo as the source:
 | [ai-rulez](https://github.com/Goldziher/ai-rulez) | Generates native configs for 20+ tools; `verify` command for CI |
 | [block/ai-rules](https://github.com/block/ai-rules) | Generate or symlink; from Block, who maintain Goose |
 | [ai-rules-sync](https://github.com/lbb00/ai-rules-sync) | Symlinks from a git repo — closest to this repo's shape |
-| [Vercel `skills`](https://github.com/vercel-labs/skills) | Already installed on this machine; `npx skills add <local path>` works |
+| [Vercel `skills`](https://github.com/vercel-labs/skills) | Package manager for skills; `npx skills add <local path>` fans out to 76+ agents |
 
 The content doesn't change either way. That's the point of keeping it in the
 standard formats.
-
----
-
-## Note on `~/.agents`
-
-It already exists on this machine and holds six skills installed by the Vercel
-`skills` CLI (`.skill-lock.json` tracks them). Whatever install approach wins
-must **add alongside** those, not replace the directory. Check before writing:
-
-```bash
-ls -la ~/.agents/skills/
-```
 
 ---
 

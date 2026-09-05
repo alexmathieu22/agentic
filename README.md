@@ -4,8 +4,21 @@ My agent setup, kept portable on purpose.
 
 Agent tooling churns fast. Anything written against a single tool's config
 format is a migration waiting to happen — so everything durable here is written
-to standards governed by the Linux Foundation's Agentic AI Foundation, and
-nothing in the repo knows which harness will read it.
+to open, vendor-neutral standards, and nothing in the repo knows which harness
+will read it.
+
+| Standard | Used for | Governance |
+|---|---|---|
+| [AGENTS.md](https://agents.md) | instructions | Agentic AI Foundation (Linux Foundation) |
+| [MCP](https://modelcontextprotocol.io) | tool servers | Agentic AI Foundation (Linux Foundation) |
+| [Agent Skills](https://agentskills.io) | procedures | open spec, originated by Anthropic |
+
+The [AAIF](https://aaif.io) was formed in December 2025 when three competing
+vendors donated their formats to a neutral foundation — MCP from Anthropic,
+AGENTS.md from OpenAI, goose from Block — with AWS, Google, Microsoft,
+Cloudflare and Bloomberg among the platinum members. That is the actual reason
+this bet is reasonable: no single vendor can now unilaterally change or retire
+these formats.
 
 ## Layers
 
