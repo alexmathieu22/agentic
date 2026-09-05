@@ -31,8 +31,8 @@ domains/
 └── engineering/               the software life-area
     ├── coding/                code-review, test-first, refactor-safely,
     │                          debug-systematically, dependency-audit,
-    │                          git-workflow
-    │                          agents: reviewer, debugger · cmd: review
+    │                          git-workflow, pull-request
+    │                          agents: reviewer, debugger · cmd: review, pr
     ├── architecture/          domain-driven-design, adr-writing, api-design
     │                          agents: architect
     ├── product/               product-discovery, user-story-writing,
@@ -51,6 +51,7 @@ Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
 
 | Path | What |
 |---|---|
+| `config/` | Durable preferences skills read when they fire — git host, CLI, branch naming |
 | `mcp/servers.json` | Every tool server, defined once |
 | `providers/` | Model endpoints per backend, as env files. **Names only, never values.** |
 | `docs/conventions.md` | Normative schemas |
