@@ -188,6 +188,24 @@ harness. Never a literal value.
 
 ---
 
+## Config — `config/<topic>.yaml`
+
+Durable preferences that skills read when they fire — where code is hosted,
+which CLI to use, branch naming. One file per topic.
+
+The distinction that matters: config holds **choices that outlive a machine**.
+It is not machine state (what happens to be installed right now, which rots
+immediately and is wrong on any other machine) and it is not secrets.
+
+**Prefer inferring over configuring.** A repository's remote is authoritative
+about its host; config supplies only what cannot be inferred, plus defaults for
+when inference fails. A skill that reads config before checking the repository
+in front of it will be wrong in someone else's checkout.
+
+Installed to `~/.config/agents/<topic>.yaml`; the copy here is the template.
+
+---
+
 ## Providers — `providers/<name>.env.example`
 
 One file per backend. Plain shell, sourceable by anything:

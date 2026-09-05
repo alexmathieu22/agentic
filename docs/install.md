@@ -15,7 +15,7 @@ legibility, so any install has to **flatten**:
 ```
 domains/engineering/coding/skills/code-review/          ─┐
 domains/engineering/product/skills/user-story-writing/  ─┼─▶ <target>/skills/<name>/
-core/skills/skill-authoring/                            ─┘
+core/skills/agentic-authoring/                          ─┘
 ```
 
 That's why skill names must be unique repo-wide (see `docs/conventions.md`) —

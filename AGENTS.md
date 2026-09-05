@@ -35,7 +35,8 @@ Every layer holds the same four kinds of thing, all optional:
 | `commands/` | Prompt macros | markdown + frontmatter |
 
 Repo-wide, outside the layers: `mcp/` (tool servers), `providers/` (model
-endpoints), `docs/`, `templates/`.
+endpoints), `config/` (durable preferences such as git host), `docs/`,
+`templates/`.
 
 ## Rules for editing
 
