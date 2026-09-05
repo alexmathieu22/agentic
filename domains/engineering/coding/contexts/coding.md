@@ -11,3 +11,20 @@
   case that doesn't exist yet.
 - Tests assert behaviour, not internals. A test that breaks on every refactor is
   testing the wrong thing.
+
+## Git
+
+- **Never commit to the default branch.** Work on a branch, or a worktree when
+  the task is long-running or runs alongside another.
+- **Conventional Commits**, always: `type(scope): subject`.
+- **Atomic commits** — one logical change each, not one file each. A rename and
+  the behaviour change that follows it are two commits even when they touch the
+  same file.
+- **Never commit without showing me first**, unless I have said to go ahead.
+  Show what would go in each commit so we can split, squash or reword before it
+  becomes history.
+- **Never push without being asked.** Once pushed, rewriting is my problem
+  instead of a rebase.
+
+`git-workflow` has the detail: commit types, splitting a mixed working tree,
+branch vs worktree, and fixing history before it leaves the machine.
