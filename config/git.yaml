@@ -1,0 +1,32 @@
+# Durable preferences that skills read when they fire.
+#
+# Not machine state (what happens to be installed right now) and not secrets.
+# Choices about how work is done, which outlive any one machine or harness.
+#
+# Most of this is inferable from the repository you are in — prefer inferring,
+# and use these as defaults and overrides. See the `pull-request` skill.
+
+# Where code is hosted. Inferable from `git remote get-url origin`; set here as
+# the default for repositories with no remote yet.
+#   github | gitlab | forgejo | gitea | bitbucket
+host: github
+
+# CLI for the host. github -> gh, gitlab -> glab, forgejo/gitea -> tea.
+cli: gh
+
+# Account used for hosting operations.
+account: alexmathieu22
+
+# What the host calls a proposed change. GitLab calls it a merge request;
+# use the host's word rather than translating.
+review_unit: pull request
+
+# Fallback when a repository's default branch cannot be determined.
+default_branch: main
+
+# Branch naming. <type> matches the Conventional Commits type of the work,
+# so feat/oauth-callback, fix/retry-loop, docs/adr-folder-split.
+branch_naming: "<type>/<subject>"
+
+# Commit message convention.
+commit_convention: conventional

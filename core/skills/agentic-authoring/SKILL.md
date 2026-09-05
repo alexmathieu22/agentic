@@ -1,18 +1,22 @@
 ---
-name: skill-authoring
+name: agentic-authoring
 description: >
-  Use when writing a new skill for this repo or fixing one that never fires.
-  Covers the spec's hard requirements, how to write a description that triggers,
-  and where a skill belongs versus a context or a project repo.
+  Use when adding to or fixing this agent setup — writing a skill, agent,
+  command or context, choosing which layer it belongs in, or diagnosing a skill
+  that exists but never fires. Covers the Agent Skills spec's hard
+  requirements, descriptions that actually trigger, and the rule that an agent
+  must state when not to use it.
 x-domain: core
 x-requires: []
 ---
 
-# Authoring a skill
+# Authoring for this repo
 
 ## When this applies
 
-Adding to `skills/`, or diagnosing a skill that exists but is never used.
+Adding any content here, or diagnosing a skill that exists but is never used.
+Not for writing a skill in some other project — the layer and `x-domain` rules
+below are specific to this repo.
 
 ## Does this belong in a skill at all?
 
@@ -68,6 +72,44 @@ If two skills could both fire, make each description say what the *other* is for
   message" does.
 - Close with "Done when" — an observable stopping condition.
 - Imperative voice. You're writing instructions, not an essay.
+
+## Agents
+
+Agents are the most expensive rung, so their bar is higher.
+
+- `x-tools` are capability **intents** — `read`, `write`, `bash`, `web` — never
+  a harness's tool names. Adapters map them; unmappable ones get dropped.
+- `x-model` is a **tier** (`fast`, `primary`, `deep`), never a model id, so the
+  same agent works on DeepSeek, Anthropic or a local model.
+- `x-skills` must name skills that exist.
+- **The description must say when *not* to delegate.** It is what a harness
+  reads when deciding, so a boundary that appears only in the body arrives
+  after the decision is made. Open the body with a `**Not for:**` line too.
+
+Write an agent only when delegation earns its cost: context isolation, a
+genuinely different posture, or real parallelism. A persona is not a reason.
+
+## Commands
+
+Thin. A command is a prompt macro that names the skills to apply and states
+what not to do — `$ARGS` interpolates the invocation. If a command is growing
+procedure of its own, that procedure belongs in a skill it calls.
+
+## Contexts
+
+Only what is **always true** for the layer. Contexts are paid for on every
+turn, so a paragraph here costs more over a week than a whole skill that fires
+twice. Anything conditional or step-by-step is a skill.
+
+## Choosing a layer
+
+Top-level domains are **areas of life**; the level below is a **kind of work**.
+`core/` is for what applies to every session regardless of area — put things
+there reluctantly, since it is always loaded.
+
+If it would only ever be useful in one repository, it does not belong here at
+all. Put it in that repo's own `.agents/skills/`, where it takes precedence
+anyway.
 
 ## Testing it
 
