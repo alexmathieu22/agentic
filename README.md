@@ -26,11 +26,12 @@ these formats.
 adopted without the others.
 
 ```
-core/                          base working agreement, skill-authoring
+core/                          base working agreement, agentic-authoring
 domains/
 └── engineering/               the software life-area
     ├── coding/                code-review, test-first, refactor-safely,
-    │                          debug-systematically, dependency-audit
+    │                          debug-systematically, dependency-audit,
+    │                          git-workflow
     │                          agents: reviewer, debugger · cmd: review
     ├── architecture/          domain-driven-design, adr-writing, api-design
     │                          agents: architect
