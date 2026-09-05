@@ -1,0 +1,12 @@
+{
+  "$comment": "Tool servers defined once, in the shape MCP clients accept. See docs/conventions.md. Secrets are ${VAR} references resolved from the environment, never literals.",
+  "mcpServers": {
+    "cachebro": {
+      "command": "npx",
+      "args": ["cachebro", "serve"],
+      "x-description": "Local file cache; speeds up repeated reads across sessions.",
+      "x-domains": ["coding"],
+      "x-scope": "global"
+    }
+  }
+}
