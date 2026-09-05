@@ -25,6 +25,9 @@
   becomes history.
 - **Never push without being asked.** Once pushed, rewriting is my problem
   instead of a rebase.
+- **Never open a pull request without showing me the commits and the
+  description first.** Opening one notifies people and starts CI; the first
+  version is what reviewers judge.
 
-`git-workflow` has the detail: commit types, splitting a mixed working tree,
+`git-workflow` and `pull-request` have the detail: commit types, splitting a mixed working tree,
 branch vs worktree, and fixing history before it leaves the machine.

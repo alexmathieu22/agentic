@@ -118,6 +118,11 @@ combine, `edit` then `git reset HEAD^` to split a commit into several.
 **Never rewrite history that has been pushed to a shared branch.** Once it is
 published, the fix is a new commit, not a rebase.
 
+## Opening a pull request
+
+That is `pull-request` — it starts where this skill ends, once the history is
+clean and the branch is ready to be shown.
+
 ## Done when
 
 Every commit is one logical change with a Conventional Commits message, the
