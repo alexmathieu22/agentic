@@ -1,9 +1,10 @@
 ---
 name: test-first
 description: >
-  Use when adding behaviour, fixing a bug, or working in code where you are
-  unsure what correct looks like. Writing the failing test first, and watching it
-  fail for the right reason, is what makes the test trustworthy.
+  Test-driven development (TDD) — the red/green/refactor loop. Use when adding
+  behaviour, fixing a bug, writing tests, or working in code where you are
+  unsure what correct looks like. Writing the failing test first, and watching
+  it fail for the right reason, is what makes the test trustworthy.
 x-domain: engineering.coding
 x-requires: []
 ---
