@@ -18,13 +18,24 @@ Adding to `skills/`, or diagnosing a skill that exists but is never used.
 
 | It's… | Put it in |
 |---|---|
-| A repeatable procedure with steps | a skill |
+| A lookup, a one-off, or something an agent would do the same way anyway | **nothing** — don't write it |
+| A repeatable procedure with steps that change the outcome | a skill |
 | Always true, every turn, no procedure | a context (`contexts/`) |
 | Only ever relevant in one repository | that repo's own `.agents/skills/` |
-| A persona that needs its own tool set | `agents/` |
+| A persona worth a separate context window | `agents/` |
 
-Skills cost nothing until they fire. Contexts cost tokens on every turn. When in
-doubt, make it a skill.
+Skills cost nothing until they fire; contexts cost tokens on every turn. But a
+skill that fires and changes nothing is worse than no skill — it spends tokens
+and teaches the agent that skills are noise. The test is whether the agent would
+produce something *different* with it loaded. If not, don't write it.
+
+### Where it sits in the ladder
+
+`core/contexts/base.md` sets the rule: use the cheapest rung that works — do it
+directly, load a skill, or delegate to a subagent, in that order. Write a skill
+only for the middle rung. Procedures that exist to be *followed by a whole
+persona over many turns* belong in `agents/`; facts and one-off lookups belong
+nowhere.
 
 ## Hard requirements
 

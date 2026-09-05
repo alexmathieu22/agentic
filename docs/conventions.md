@@ -113,15 +113,30 @@ deliberately close to what most harnesses accept.
 ```yaml
 ---
 name: reviewer
-description: One line — what this subagent is for.
+description: >                      # REQUIRED. Must say when NOT to delegate — see below.
+  Reviews a diff for correctness first, then reuse and clarity. Worth delegating
+  to when an independent read matters. Not for reading a file or explaining
+  what a change does.
 x-tools: [read, grep, glob, bash]   # capability intents, not any harness's tool names
 x-model: primary                    # fast | primary | deep — a tier, see providers/
 x-skills: [code-review]
 x-domain: engineering.coding
 ---
 
-System prompt.
+System prompt, opening with a **Not for:** line.
 ```
+
+### Every agent must state when *not* to use it
+
+A subagent is the most expensive rung in the ladder (`core/contexts/base.md`):
+it starts cold, re-derives context the caller already has, and returns a summary
+rather than the real output. The `description` is what a harness reads when
+deciding whether to delegate, so the boundary has to live there — not only in
+the body, which is read after the decision is already made.
+
+Delegation earns its cost in exactly three cases: **context isolation**, a
+**genuinely different posture**, or **real parallelism**. A persona is not a
+reason. If none of the three hold, the work should be done directly.
 
 `x-tools` are intents (`read`, `write`, `bash`, `web`), not tool names, because
 every harness names its tools differently. `x-model` is a tier, not a model id,
