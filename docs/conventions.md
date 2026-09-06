@@ -188,6 +188,26 @@ harness. Never a literal value.
 
 ---
 
+## Harnesses — `harnesses/<name>/`
+
+Wiring for one agent runtime: its config template, how to run it, and what to
+verify. The only place a tool's own vocabulary may appear.
+
+**The dependency runs one way.** A harness directory may reference canonical
+content; canonical content may never reference a harness. `rm -rf
+harnesses/<name>` must leave the repo whole and every other harness working.
+The validator greps `core/` and `domains/` for harness vocabulary to enforce it.
+
+Prefer wiring a harness to read this repo **in place** over copying or
+flattening into it. A harness that can take a list of skill roots (dsh's
+`customSkillDirs`) keeps the layering intact and makes edits live; one that
+scans a single directory needs the flattening described in `docs/install.md`.
+
+Secrets never appear here. Name an environment variable and let `providers/`
+supply it.
+
+---
+
 ## Config — `config/<topic>.yaml`
 
 Durable preferences that skills read when they fire — where code is hosted,
