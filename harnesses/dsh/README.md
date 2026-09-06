@@ -112,10 +112,20 @@ namespace).
 
 [`harnesses/dsh/presets/agentic/`](presets/agentic/) is this repo's preset: a
 copy of `dsh`'s own shipped `standard` preset — the full coding agent (shell,
-fs, skills, goals, plan mode, compaction, subagents, workflows) — with one
-change, commented in place in [`agent.cordis.yml`](presets/agentic/agent.cordis.yml):
-`skill-filesystem`'s `customSkillDirs` lists this repo's skill layers, the
-actual fix for the `customSkillDirs` mistake above.
+fs, skills, goals, plan mode, compaction, subagents, workflows) — with two
+changes, each commented in place in [`agent.cordis.yml`](presets/agentic/agent.cordis.yml):
+
+1. `skill-filesystem`'s `customSkillDirs` lists this repo's skill layers —
+   the actual fix for the `customSkillDirs` mistake above.
+2. `persona`'s text gains the [ponytail](https://github.com/DietrichGebert/ponytail)
+   YAGNI ladder (MIT). ponytail has no `dsh` integration of its own — its
+   README lists Claude Code, Codex, Copilot CLI, Pi, OpenCode, Gemini CLI and
+   Qoder, and its hooks fire on `SessionStart`/`UserPromptSubmit`, Claude/Codex
+   event names `dsh` doesn't emit — so its ruleset is reproduced verbatim under
+   its MIT license instead of installed as a plugin. `dsh-persona` registers a
+   fixed system-prompt section for every request on this preset, which is the
+   closest thing `dsh` has to what ponytail's own hook does elsewhere: always
+   on, not dependent on skill-relevance-matching guessing it's applicable.
 
 Install by symlinking the whole directory, the same live-edit approach as the
 Claude Code harness:
@@ -133,8 +143,8 @@ agentic`), so a plain new session should use it with no further action once
 of `deepseek-ai/deepseek-harness@d347e70` (2026-09-06) — a version bump to
 `standard` upstream (a new tool row, a changed default) won't reach this copy
 automatically. Re-diff `presets/agentic/agent.cordis.yml` against a fresh copy
-of the shipped `standard` after upgrading `dsh`, and reapply the change above
-if it changed. Untested against a live install — confirm the symlink is
+of the shipped `standard` after upgrading `dsh`, and reapply the two changes
+above if it changed. Untested against a live install — confirm the symlink is
 actually discovered and mountable before relying on it (see
 [Verify](#verify)).
 
@@ -196,8 +206,11 @@ Written from documentation and `dsh`'s own source, not from a running install
    `customSkillDirs` roots in `presets/agentic/agent.cordis.yml`.
 3. A skill fires without being named — describe a review situation in your own
    words and see whether `code-review` triggers.
-4. The OpenRouter provider appears in the model picker and a request succeeds.
-5. Tool use works through OpenRouter — the known weak spot when routing agentic
+4. The model states the ponytail ladder as governing behavior on an ordinary
+   coding request, unprompted — the persona row, not relevance-matching, so it
+   should hold even when the request doesn't look like an over-engineering risk.
+5. The OpenRouter provider appears in the model picker and a request succeeds.
+6. Tool use works through OpenRouter — the known weak spot when routing agentic
    traffic. If it fails, switch to the direct `deepseek` provider and report it
    here rather than working around it silently.
 
