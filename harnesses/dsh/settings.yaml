@@ -1,0 +1,47 @@
+# Template for ~/.dsh/settings.yaml (or $DSH_HOME/settings.yaml).
+#
+# Copy it there — dsh reads its own home, not this repo:
+#   mkdir -p ~/.dsh && cp harnesses/dsh/settings.yaml ~/.dsh/settings.yaml
+#
+# Replace /home/you with your home if this is ever used elsewhere; it is
+# not clear from the docs whether ~ is expanded, so absolute paths are used.
+#
+# VERIFY ON FIRST RUN. This is written from dsh's documentation, not from a
+# running install. dsh is at 0.1.x release candidates and its schema moves.
+
+# Extra skill roots. Scanned at rank 300 — after a project's own .dsh/skills
+# and .agents/skills, before ~/.dsh/skills and ~/.agents/skills.
+#
+# dsh scans exactly ONE directory level (<root>/<name>/SKILL.md), so each layer
+# of this repo is listed as its own root. The layering survives untouched — no
+# flattening, no symlink farm.
+customSkillDirs:
+  - /home/you/Repos/agentic/core/skills
+  - /home/you/Repos/agentic/domains/engineering/coding/skills
+  - /home/you/Repos/agentic/domains/engineering/architecture/skills
+  - /home/you/Repos/agentic/domains/engineering/product/skills
+  - /home/you/Repos/agentic/domains/engineering/delivery/skills
+
+# Providers. The key is NEVER written here — apiKeyEnv names an environment
+# variable, which providers/openrouter.env already exports.
+llm-pi-ai:
+  providers:
+    openrouter:
+      apiKeyEnv: OPENROUTER_API_KEY
+      api: openai-completions          # openai-completions | openai-responses | anthropic-messages
+      baseURL: https://openrouter.ai/api/v1
+      models:
+        - id: deepseek/deepseek-v4-pro
+        - id: deepseek/deepseek-v4
+        - id: anthropic/claude-opus-5
+        - id: qwen/qwen3-coder
+
+    # Direct DeepSeek, for when you want first-party rather than a router.
+    # Uses providers/deepseek.env instead.
+    deepseek:
+      apiKeyEnv: DEEPSEEK_API_KEY
+      api: openai-completions
+      baseURL: https://api.deepseek.com
+      models:
+        - id: deepseek-v4-pro
+        - id: deepseek-v4

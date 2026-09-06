@@ -1,0 +1,15 @@
+{
+  "name": "dsh-runner",
+  "private": true,
+  "description": "Pins the DeepSeek Harness version. Not published; exists so the harness is reproducible rather than whatever npx resolved today.",
+  "scripts": {
+    "web": "dsh web",
+    "headless": "dsh headless"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.1.2-rc.1"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  }
+}
