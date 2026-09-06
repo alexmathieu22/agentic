@@ -52,7 +52,7 @@ Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
 | Path | What |
 |---|---|
 | `config/` | Durable preferences skills read when they fire — git host, CLI, branch naming |
-| `harnesses/` | Per-harness wiring. Disposable — the dependency only runs this way |
+| `harnesses/` | Per-harness wiring (`dsh`, `claude-code`). Disposable — the dependency only runs this way |
 | `mcp/servers.json` | Every tool server, defined once |
 | `providers/` | Model endpoints per backend, as env files. **Names only, never values.** |
 | `docs/conventions.md` | Normative schemas |
