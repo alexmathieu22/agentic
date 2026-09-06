@@ -1,4 +1,5 @@
-# Secrets never live in this repo. See docs/conventions.md#secrets.
+# Secrets never live in this repo. See docs/conventions.md.
+.credentials.yaml
 secrets.env
 *.secret
 *.key
