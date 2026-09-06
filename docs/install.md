@@ -1,10 +1,20 @@
 # Installing
 
-Not settled yet — deliberately. The content is written to open formats precisely
-so this decision stays open and reversible. This file records the constraint and
-the options rather than pretending there's one answer.
+One harness is wired (`dsh`); the rest are deliberately still open. The content
+is written to open formats precisely so this stays reversible. This file records
+the constraint and the options rather than pretending there is one answer for
+every harness.
 
 ---
+
+## Solved: DeepSeek Harness
+
+`dsh` is wired up in [`harnesses/dsh/`](../harnesses/dsh/README.md). It takes a
+*list* of skill roots (`customSkillDirs`) and scans each one level deep, so
+every layer of this repo registers as its own root — no flattening, no symlinks,
+edits live. The constraint below does not bind it.
+
+Everything else is still open.
 
 ## The constraint
 

@@ -35,8 +35,8 @@ Every layer holds the same four kinds of thing, all optional:
 | `commands/` | Prompt macros | markdown + frontmatter |
 
 Repo-wide, outside the layers: `mcp/` (tool servers), `providers/` (model
-endpoints), `config/` (durable preferences such as git host), `docs/`,
-`templates/`.
+endpoints), `config/` (durable preferences such as git host), `harnesses/`
+(per-harness wiring), `docs/`, `templates/`.
 
 ## Rules for editing
 
@@ -59,9 +59,11 @@ endpoints), `config/` (durable preferences such as git host), `docs/`,
 5. **`x-domain:` must match the path** — `engineering.coding`, `engineering.product`, `core`.
    It's what lets a flattened install be traced back to its layer.
 
-6. **No harness vocabulary in content.** Never write `.claude/`, `.cursor/`,
-   `opencode.json` or any tool's config shape into a skill, context or agent.
-   Translation belongs in `docs/install.md`.
+6. **No harness vocabulary in content, and the dependency runs one way.**
+   Never write a tool's config shape into a skill, context or agent. Harness
+   wiring lives in `harnesses/<name>/`, which may reference canonical content —
+   canonical content may never reference a harness. Deleting any
+   `harnesses/<name>/` must leave the repo whole.
 
 7. **Nothing here is project-specific.** This repo owns cross-project
    capability. A skill only one repo will ever use belongs in that repo's own
