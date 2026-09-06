@@ -7,12 +7,17 @@ every harness.
 
 ---
 
-## Solved: DeepSeek Harness
+## Solved
 
-`dsh` is wired up in [`harnesses/dsh/`](../harnesses/dsh/README.md). It takes a
-*list* of skill roots (`customSkillDirs`) and scans each one level deep, so
-every layer of this repo registers as its own root — no flattening, no symlinks,
-edits live. The constraint below does not bind it.
+| Harness | How | Flattens? |
+|---|---|---|
+| [`dsh`](../harnesses/dsh/README.md) | `customSkillDirs` takes a list of roots | No — layers stay as they are |
+| [`claude-code`](../harnesses/claude-code/README.md) | `install.sh`, symlinks | Yes — it scans one flat directory per kind |
+
+The two harnesses answer the constraint below differently, which is the point
+of keeping the content neutral: `dsh` is configured to read the layers in
+place, Claude Code needs them flattened, and neither fact appears anywhere in
+the content itself.
 
 Everything else is still open.
 
@@ -39,9 +44,10 @@ variables.
 
 ## Options
 
-**Link the layers you want, by hand.** A loop per layer, symlinking each skill
-folder into the target. Explicit, no dependency, and edits are live because
-symlinks point back at the repo. Tedious once there are several targets.
+**Write an install script for it**, as `harnesses/<name>/install.sh`. That is
+what Claude Code has: symlinks, a manifest of everything it created, an
+uninstall that reverses exactly that, and a refusal to touch anything it did
+not make. Copy it as the starting point for another harness.
 
 **Adopt an existing manager.** Several already do this fan-out and can treat
 this repo as the source:
