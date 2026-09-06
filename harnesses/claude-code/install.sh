@@ -44,14 +44,14 @@ if [ "$UNINSTALL" = 1 ]; then
     [ -z "$p" ] && continue
     if [ -L "$p" ]; then
       [ "$DRY" = 1 ] || rm "$p"
-      say "removed  ${p/#$HOME/\~}"; removed=$((removed+1))
+      say "removed  ${p/#$HOME/~}"; removed=$((removed+1))
     elif [ -f "$p" ] && [ "$(cat "$p" 2>/dev/null)" = "@$REPO/AGENTS.md" ]; then
       # The CLAUDE.md bridge is a real file, not a link, but it is still ours
       # — and only while it contains nothing but the import we wrote.
       [ "$DRY" = 1 ] || rm "$p"
-      say "removed  ${p/#$HOME/\~}"; removed=$((removed+1))
+      say "removed  ${p/#$HOME/~}"; removed=$((removed+1))
     elif [ -e "$p" ]; then
-      say "kept     ${p/#$HOME/\~}  (edited since install — not ours to delete)"
+      say "kept     ${p/#$HOME/~}  (edited since install — not ours to delete)"
     fi
   done < "$MANIFEST"
   [ "$DRY" = 1 ] || rm -f "$MANIFEST"
@@ -75,7 +75,7 @@ link() {
     fi
   elif [ -e "$dst" ]; then
     if [ "$FORCE" != 1 ]; then
-      say "CONFLICT ${dst/#$HOME/\~}  exists and was not created here — --force to replace"
+      say "CONFLICT ${dst/#$HOME/~}  exists and was not created here — --force to replace"
       conflicts=$((conflicts+1)); return 0
     fi
   fi
@@ -85,7 +85,7 @@ link() {
     ln -s "$src" "$dst"
   fi
   echo "$dst" >> "$MANIFEST.new"
-  say "linked   ${dst/#$HOME/\~}"
+  say "linked   ${dst/#$HOME/~}"
   created=$((created+1))
 }
 
@@ -209,5 +209,5 @@ fi
 head_ "Done."
 say "$created linked, $skipped already correct, $conflicts conflict(s)"
 [ "$conflicts" -gt 0 ] && say "rerun with --force to replace conflicting paths"
-say "manifest: ${MANIFEST/#$HOME/\~}"
+say "manifest: ${MANIFEST/#$HOME/~}"
 exit 0
