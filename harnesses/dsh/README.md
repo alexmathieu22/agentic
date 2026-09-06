@@ -56,9 +56,14 @@ returns. Note also that the images are community-maintained, not official.
 
 ### Prerequisites
 
-- Node `^22.19.0` or `>=24.0.0` (asdf provides 22.22.1 — satisfied)
-- ~1 GB free disk for the package, workspace and session logs
-- No GPU
+All pinned in the repo's `.tool-versions`, so asdf provides them:
+
+| | |
+|---|---|
+| Node | `^22.19.0 \|\| >=24.0.0` — pinned at 22.22.1 |
+| pnpm | pinned at 10.32.1 |
+
+Also ~1 GB free disk for the package, workspace and session logs. No GPU.
 
 ### Install and run
 
@@ -67,10 +72,15 @@ resolves the newest release each time — including across release candidates.
 
 ```bash
 cd harnesses/dsh
-pnpm install
+pnpm install --frozen-lockfile
 pnpm web           # Web UI on http://127.0.0.1:3080
 pnpm headless      # no browser
 ```
+
+`pnpm-lock.yaml` is committed, so `--frozen-lockfile` gives the same tree every
+time. Without it the pin covers only dsh itself: one direct dependency pulls
+**561 transitive packages**, and unpinned they float on every install. That tail
+is worth knowing about — it is 561 maintainers who can reach this machine.
 
 `dsh` is at `0.1.2-rc.1` — pre-1.0 and moving. Expect the schema to shift, and
 re-check this directory against the real thing after upgrading.
