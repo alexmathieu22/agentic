@@ -187,7 +187,7 @@ else
   if [ -e "$MEMORY" ] && ! ours_memory "$MEMORY"; then
     say "MANUAL     $(short "$MEMORY") exists and is yours — add these lines:"
     printf '%s\n' "$body" | grep '^@' | sed 's/^/               /'
-  elif [ -e "$MEMORY" ] && [ "$(cat "$MEMORY")" = "$body" ]; then
+  elif [ -e "$MEMORY" ] && [ "$(cat "$MEMORY")" = "$(printf '%s' "$body")" ]; then
     echo "$MEMORY" >> "$MANIFEST.new"; skipped=$((skipped+1))
   else
     [ "$DRY" = 1 ] || { mkdir -p "$TARGET"; printf '%s' "$body" > "$MEMORY"; }
