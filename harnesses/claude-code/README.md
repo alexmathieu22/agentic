@@ -37,6 +37,7 @@ is tested against a throwaway home.
 | Commands | `~/.claude/commands/<name>.md` | symlink per file |
 | Contexts | `~/.claude/CLAUDE.md` | generated file of `@` imports |
 | MCP servers | user scope | `claude mcp add -s user` |
+| Plugins | user scope | `claude plugin marketplace add` + `claude plugin install`, see below |
 | Hooks | `~/.claude/settings.json` | merged, see below |
 
 ### Flattening
@@ -96,6 +97,25 @@ The script never removes anything it did not create.
   skill already sitting in `~/.claude/skills/`.
 - Uninstall removes the `CLAUDE.md` bridge only while it contains nothing but
   the import line. Edit it and it becomes yours; uninstall leaves it alone.
+
+### Plugins
+
+Installing `engineering.coding` (the default) also installs
+[ponytail](https://github.com/DietrichGebert/ponytail) — a third-party plugin
+that pushes the agent toward the smallest solution that works (YAGNI, stdlib
+first, no unrequested abstractions) before it writes code. It's not repo
+content: it's a Claude Code marketplace plugin, so it's wired here rather than
+living in `domains/engineering/coding/`, which would put a harness-specific
+plugin id into canonical content.
+
+The script runs `claude plugin marketplace add DietrichGebert/ponytail`, then
+`claude plugin install ponytail@ponytail -s user`; both are skipped if already
+present, and skipped entirely if `engineering.coding` isn't selected. It does
+not restart Claude Code — a running session needs a restart to pick the plugin
+up.
+
+Uninstalling it is manual, same as MCP servers: `claude plugin uninstall
+ponytail`.
 
 ### Hooks
 

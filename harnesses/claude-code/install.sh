@@ -97,8 +97,10 @@ if [ "$UNINSTALL" = 1 ]; then
   else
     head_ "Removed $removed item(s)."
   fi
-  say "MCP servers and settings.json hooks are not touched — remove those with"
+  say "MCP servers, plugins and settings.json hooks are not touched — remove"
+  say "those with:"
   say "  claude mcp remove <name> -s user"
+  say "  claude plugin uninstall ponytail"
   exit 0
 fi
 
@@ -229,6 +231,49 @@ for n, s in json.load(open(sys.argv[1])).get("mcpServers", {}).items():
         print("\t".join([n, s["command"], " ".join(s.get("args", []))]))
 PY
   )
+fi
+
+# --- plugins -----------------------------------------------------------------
+# ponytail (github.com/DietrichGebert/ponytail) enforces a YAGNI ladder before
+# writing code. It's a third-party Claude Code plugin, not repo content, so it
+# rides along with the engineering.coding context rather than living in
+# domains/ — installing it any other way would put harness vocabulary
+# (marketplaces, plugin ids) into canonical content.
+
+head_ "Plugins"
+wants_ponytail=0
+for c in $CONTEXTS; do
+  [ "$c" = "engineering.coding" ] && wants_ponytail=1
+done
+if [ "$wants_ponytail" != 1 ]; then
+  say "skipped    engineering.coding not selected"
+elif ! command -v claude >/dev/null 2>&1; then
+  say "skipped    claude CLI not on PATH"
+elif ! command -v python3 >/dev/null 2>&1; then
+  say "skipped    python3 needed to check installed plugins"
+elif [ "$DRY" = 1 ]; then
+  say "would      claude plugin marketplace add DietrichGebert/ponytail"
+  say "would      claude plugin install ponytail@ponytail -s user"
+else
+  has_marketplace=$(claude plugin marketplace list --json 2>/dev/null \
+    | python3 -c "import json,sys; print('1' if any(m.get('name')=='ponytail' for m in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
+  if [ "$has_marketplace" = 1 ]; then
+    say "ok         marketplace ponytail already added"
+  elif claude plugin marketplace add DietrichGebert/ponytail >/dev/null 2>&1; then
+    say "added      marketplace ponytail"
+  else
+    say "FAILED     marketplace add — run by hand: claude plugin marketplace add DietrichGebert/ponytail"
+  fi
+
+  has_plugin=$(claude plugin list --json 2>/dev/null \
+    | python3 -c "import json,sys; print('1' if any(p.get('name')=='ponytail' for p in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
+  if [ "$has_plugin" = 1 ]; then
+    say "ok         ponytail already installed"
+  elif claude plugin install ponytail@ponytail -s user >/dev/null 2>&1; then
+    say "installed  ponytail — restart Claude Code to activate"
+  else
+    say "FAILED     plugin install — run by hand: claude plugin install ponytail@ponytail"
+  fi
 fi
 
 # --- hooks -------------------------------------------------------------------
