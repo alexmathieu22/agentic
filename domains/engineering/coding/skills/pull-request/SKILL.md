@@ -61,6 +61,13 @@ rewrite.
 2. **Read your own diff, all of it.** You will find leftover debug output, a
    commented block, a file you never meant to stage. Finding it yourself costs
    nothing; a reviewer finding it costs a round trip.
+
+   Check the **file list**, not just the added lines. Generated output —
+   `__pycache__/`, `.pyc`, `dist/`, coverage reports, lockfiles you did not
+   mean to touch — passes a scan for suspicious *content* because there is
+   nothing suspicious in it. `git diff --stat <base>...HEAD` shows what a
+   line-by-line read will not. Anything generated belongs in `.gitignore`, not
+   in the commit.
 3. **Run the tests, and say you did.** Not "should be fine".
 4. **Check what the branch actually contains.** `git diff <base>...HEAD --stat`
    catches the file you forgot was in there.
@@ -112,6 +119,23 @@ enabled the other, for the same reason they belong in different commits.
 Open as a **draft** when the work continues, when CI has not passed yet, or
 when you want direction on the approach before the detail is reviewed. Mark it
 ready only when you would be comfortable with it merging as-is.
+
+## Merging
+
+Squash or rebase — **never a merge commit**. Both keep the default branch
+linear; the difference is whether the individual commits survive.
+
+| | Use when |
+|---|---|
+| **Squash** | The default. The branch is one logical change, and its intermediate commits were steps toward it rather than things worth keeping. |
+| **Rebase** | The commits are individually meaningful and independently revertable — several atomic changes that happened to be reviewed together. |
+
+When squashing, **the squash message is the one that survives**, so write it
+rather than accepting the concatenation of every commit subject that the host
+offers by default. Conventional Commits form, and a body explaining why.
+
+Delete the branch on merge. A merged branch left behind is a branch someone
+will later mistake for unmerged work.
 
 ## After opening
 
