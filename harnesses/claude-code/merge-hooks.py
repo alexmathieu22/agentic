@@ -5,6 +5,7 @@ settings.json is shared — it holds hooks this repo does not own. So this
 merges additively, marks its own entries, is idempotent across runs, and
 backs the file up before touching it.
 """
+import datetime
 import json
 import os
 import shutil
@@ -44,8 +45,13 @@ def main(repo: str, settings_path: str) -> int:
 
     settings = Path(settings_path)
     data = {}
+    backup = None
     if settings.exists():
-        shutil.copy2(settings, settings.with_suffix(".json.bak"))
+        # Timestamped, never overwritten. A fixed .bak is destroyed by the
+        # second run, which is exactly when the original is most wanted.
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup = settings.with_name(f"{settings.name}.{stamp}.bak")
+        shutil.copy2(settings, backup)
         try:
             data = json.loads(settings.read_text())
         except json.JSONDecodeError as e:
@@ -53,16 +59,14 @@ def main(repo: str, settings_path: str) -> int:
             return 1
 
     hooks = data.setdefault("hooks", {})
-    added = kept = 0
+    added = 0
 
     for neutral, path in found.items():
         event = EVENTS[neutral]
         entries = hooks.setdefault(event, [])
 
         # Drop only our own previous entries; everything else is somebody's.
-        before = len(entries)
         entries[:] = [e for e in entries if e.get("_source") != MARKER]
-        kept += before - (before - len([e for e in entries if e.get("_source") != MARKER]))
 
         entries.append({
             "_source": MARKER,
@@ -77,7 +81,8 @@ def main(repo: str, settings_path: str) -> int:
         1 for evs in hooks.values() for e in evs if e.get("_source") != MARKER
     )
     print(f"  {added} wired, {foreign} pre-existing hook entries left untouched")
-    print(f"  backup: {settings.with_suffix('.json.bak')}")
+    if backup:
+        print(f"  backup: {backup}")
     return 0
 
 
