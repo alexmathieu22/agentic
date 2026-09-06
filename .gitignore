@@ -9,9 +9,11 @@ secrets.env
 # Vendored third-party skills are declared in vendor.yaml, not committed.
 vendor/
 
-# Build / tooling
+# Build / tooling — generated, never committed
 node_modules/
 dist/
+__pycache__/
+*.py[cod]
 .DS_Store
 *.log
 
@@ -19,3 +21,6 @@ dist/
 .agentctl-cache/
 *.env
 !*.env.example
+
+# MCP server cache
+.cachebro/
