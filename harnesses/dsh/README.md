@@ -116,7 +116,10 @@ fs, skills, goals, plan mode, compaction, subagents, workflows) — with two
 changes, each commented in place in [`agent.cordis.yml`](presets/agentic/agent.cordis.yml):
 
 1. `skill-filesystem`'s `customSkillDirs` lists this repo's skill layers —
-   the actual fix for the `customSkillDirs` mistake above.
+   the actual fix for the `customSkillDirs` mistake above. Built from the
+   `AGENTIC_REPO` environment variable via `!!js`, not a literal path, so no
+   machine or username is committed here — export it before launching `dsh`
+   (see [Setup](#setup)).
 2. `persona`'s text gains the [ponytail](https://github.com/DietrichGebert/ponytail)
    YAGNI ladder (MIT). ponytail has no `dsh` integration of its own — its
    README lists Claude Code, Codex, Copilot CLI, Pi, OpenCode, Gemini CLI and
@@ -179,7 +182,12 @@ router. Switch by sourcing `deepseek.env` instead.
 mkdir -p ~/.dsh/.agent-presets
 cp harnesses/dsh/settings.yaml ~/.dsh/settings.yaml
 ln -s "$(pwd)/harnesses/dsh/presets/agentic" ~/.dsh/.agent-presets/agentic
+export AGENTIC_REPO="$(pwd)"   # needed by the agentic preset's customSkillDirs
 ```
+
+Put the `export` in whatever shell profile or wrapper actually launches `dsh` —
+a session started without it silently gets no custom skill dirs rather than an
+error, so it's easy to miss (see [Verify](#verify)).
 
 `~/.dsh/` is `$DSH_HOME`: config, sessions, plugins, and a user-global
 `AGENTS.md`. Symlink this repo's `AGENTS.md` there if you want its conventions
@@ -203,7 +211,9 @@ Written from documentation and `dsh`'s own source, not from a running install
    explicitly (the `agent-presets: default: agentic` override in
    `settings.yaml`).
 2. Settings → Skills lists this repo's skills on that preset, attributed to the
-   `customSkillDirs` roots in `presets/agentic/agent.cordis.yml`.
+   `customSkillDirs` roots in `presets/agentic/agent.cordis.yml` — this is also
+   the check that `process.env` is actually reachable from a `!!js` snippet in
+   this file; if the roots are missing entirely, that's likely why.
 3. A skill fires without being named — describe a review situation in your own
    words and see whether `code-review` triggers.
 4. The model states the ponytail ladder as governing behavior on an ordinary

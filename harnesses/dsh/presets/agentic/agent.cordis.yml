@@ -133,16 +133,23 @@
 #
 # customSkillDirs: this repo's layers, scanned at rank 300 — after project
 # `.dsh/skills`/`.agents/skills`, before the user's `~/.dsh/skills`/`~/.agents/skills`.
-# Replace /home/you with your home if this preset is ever used elsewhere.
+#
+# Built from $AGENTIC_REPO rather than a literal path, so no machine or
+# username ends up committed here — export it (e.g. in the shell profile that
+# launches dsh, or inline before `pnpm web`) pointing at this repo's checkout:
+#   export AGENTIC_REPO="$(pwd)"
+# `!!js` snippets are confirmed to run in this file (see `disabled:` below);
+# `process.env` inside one is not verified against a live dsh install — if it
+# turns out unavailable, this degrades to no custom skill dirs, not a crash.
 - id: skill-filesystem
   name: '@deepseek-ai/dsh-skill-filesystem'
   config:
     customSkillDirs:
-      - /home/you/Repos/agentic/core/skills
-      - /home/you/Repos/agentic/domains/engineering/coding/skills
-      - /home/you/Repos/agentic/domains/engineering/architecture/skills
-      - /home/you/Repos/agentic/domains/engineering/product/skills
-      - /home/you/Repos/agentic/domains/engineering/delivery/skills
+      - !!js "process.getBuiltinModule('node:path').join(process.env.AGENTIC_REPO, 'core/skills')"
+      - !!js "process.getBuiltinModule('node:path').join(process.env.AGENTIC_REPO, 'domains/engineering/coding/skills')"
+      - !!js "process.getBuiltinModule('node:path').join(process.env.AGENTIC_REPO, 'domains/engineering/architecture/skills')"
+      - !!js "process.getBuiltinModule('node:path').join(process.env.AGENTIC_REPO, 'domains/engineering/product/skills')"
+      - !!js "process.getBuiltinModule('node:path').join(process.env.AGENTIC_REPO, 'domains/engineering/delivery/skills')"
 
 - id: tool-skill
   name: '@deepseek-ai/dsh-tool-skill'
