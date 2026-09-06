@@ -9,18 +9,18 @@
 # VERIFY ON FIRST RUN. This is written from dsh's documentation, not from a
 # running install. dsh is at 0.1.x release candidates and its schema moves.
 
-# Extra skill roots. Scanned at rank 300 — after a project's own .dsh/skills
-# and .agents/skills, before ~/.dsh/skills and ~/.agents/skills.
-#
-# dsh scans exactly ONE directory level (<root>/<name>/SKILL.md), so each layer
-# of this repo is listed as its own root. The layering survives untouched — no
-# flattening, no symlink farm.
-customSkillDirs:
-  - /home/you/Repos/agentic/core/skills
-  - /home/you/Repos/agentic/domains/engineering/coding/skills
-  - /home/you/Repos/agentic/domains/engineering/architecture/skills
-  - /home/you/Repos/agentic/domains/engineering/product/skills
-  - /home/you/Repos/agentic/domains/engineering/delivery/skills
+# customSkillDirs is NOT a top-level settings.yaml key, despite an earlier
+# version of this file claiming otherwise — dsh only accepts it inside a
+# `@deepseek-ai/dsh-skill-filesystem` row in a preset's own agent.cordis.yml.
+# This repo's skill layers are wired that way instead, in the `agentic` preset
+# at harnesses/dsh/presets/agentic/. See harnesses/dsh/README.md#presets.
+
+# Make `agentic` (harnesses/dsh/presets/agentic/) the session default, once
+# installed under $DSH_HOME/.agent-presets/agentic/ — see
+# harnesses/dsh/README.md#presets. Layers a per-user default over the
+# deployment's own; clearing this key re-inherits that default.
+agent-presets:
+  default: agentic
 
 # Providers. The key is NEVER written here — apiKeyEnv names an environment
 # variable, which providers/openrouter.env already exports.
