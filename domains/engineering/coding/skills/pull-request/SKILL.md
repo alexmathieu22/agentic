@@ -61,6 +61,13 @@ rewrite.
 2. **Read your own diff, all of it.** You will find leftover debug output, a
    commented block, a file you never meant to stage. Finding it yourself costs
    nothing; a reviewer finding it costs a round trip.
+
+   Check the **file list**, not just the added lines. Generated output —
+   `__pycache__/`, `.pyc`, `dist/`, coverage reports, lockfiles you did not
+   mean to touch — passes a scan for suspicious *content* because there is
+   nothing suspicious in it. `git diff --stat <base>...HEAD` shows what a
+   line-by-line read will not. Anything generated belongs in `.gitignore`, not
+   in the commit.
 3. **Run the tests, and say you did.** Not "should be fine".
 4. **Check what the branch actually contains.** `git diff <base>...HEAD --stat`
    catches the file you forgot was in there.
