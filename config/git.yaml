@@ -30,3 +30,11 @@ branch_naming: "<type>/<subject>"
 
 # Commit message convention.
 commit_convention: conventional
+
+# How a reviewed change lands on the default branch.
+#   squash — one commit per change, linear history, PR discussion is the record
+#            of the intermediate steps
+#   rebase — keeps the individual commits, still linear, no merge commit
+# Merge commits are not used. Never fall back to one because a squash is
+# awkward; ask instead.
+merge_strategy: squash

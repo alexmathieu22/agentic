@@ -113,6 +113,23 @@ Open as a **draft** when the work continues, when CI has not passed yet, or
 when you want direction on the approach before the detail is reviewed. Mark it
 ready only when you would be comfortable with it merging as-is.
 
+## Merging
+
+Squash or rebase — **never a merge commit**. Both keep the default branch
+linear; the difference is whether the individual commits survive.
+
+| | Use when |
+|---|---|
+| **Squash** | The default. The branch is one logical change, and its intermediate commits were steps toward it rather than things worth keeping. |
+| **Rebase** | The commits are individually meaningful and independently revertable — several atomic changes that happened to be reviewed together. |
+
+When squashing, **the squash message is the one that survives**, so write it
+rather than accepting the concatenation of every commit subject that the host
+offers by default. Conventional Commits form, and a body explaining why.
+
+Delete the branch on merge. A merged branch left behind is a branch someone
+will later mistake for unmerged work.
+
 ## After opening
 
 - **Respond to every comment**, even if only to say you disagree and why.
