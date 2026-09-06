@@ -49,6 +49,17 @@ say()   { printf '  %s\n' "$*"; }
 head_() { printf '\n%s\n' "$*"; }
 short() { printf '%s' "${1/#$HOME/~}"; }
 
+# Is this global-memory file one we generated? True for the current marked
+# form, and for the single-line @AGENTS.md file earlier versions wrote — that
+# one is otherwise orphaned: install would not replace it and uninstall would
+# not remove it.
+ours_memory() {
+  [ -f "$1" ] || return 1
+  [ "$(head -1 "$1" 2>/dev/null)" = "$MARKER" ] && return 0
+  [ "$(cat "$1" 2>/dev/null)" = "@$REPO/AGENTS.md" ] && return 0
+  return 1
+}
+
 # Turn engineering.coding into domains/engineering/coding
 layer_path() {
   case "$1" in
@@ -71,7 +82,7 @@ if [ "$UNINSTALL" = 1 ]; then
     if [ -L "$p" ]; then
       [ "$DRY" = 1 ] || rm "$p"
       say "$verb  $(short "$p")"; removed=$((removed+1))
-    elif [ -f "$p" ] && [ "$(head -1 "$p" 2>/dev/null)" = "$MARKER" ]; then
+    elif ours_memory "$p"; then
       # The generated memory file is a real file, not a link, but it is ours
       # — and only while it still carries the marker we wrote.
       [ "$DRY" = 1 ] || rm "$p"
@@ -173,7 +184,7 @@ else
   done
   body="$body"$'\n'
 
-  if [ -e "$MEMORY" ] && [ "$(head -1 "$MEMORY" 2>/dev/null)" != "$MARKER" ]; then
+  if [ -e "$MEMORY" ] && ! ours_memory "$MEMORY"; then
     say "MANUAL     $(short "$MEMORY") exists and is yours — add these lines:"
     printf '%s\n' "$body" | grep '^@' | sed 's/^/               /'
   elif [ -e "$MEMORY" ] && [ "$(cat "$MEMORY")" = "$body" ]; then
