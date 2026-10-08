@@ -1,62 +1,45 @@
 # Installing
 
-One harness is wired (`claude-code`); the rest are deliberately still open. The content
-is written to open formats precisely so this stays reversible. This file records
-the constraint and the options rather than pretending there is one answer for
-every harness.
+Claude Code is the only wired harness. The content stays in open formats so
+others can be added later, but nothing else is set up.
 
----
+## Install
 
-## Solved
+```bash
+harnesses/claude-code/install.sh
+```
 
-| Harness | How | Flattens? |
-|---|---|---|
-| [`claude-code`](../harnesses/claude-code/README.md) | `install.sh`, symlinks | Yes — it scans one flat directory per kind |
+Every skill — yours and third-party — is installed with `npx skills add -g -a
+claude-code`, which **copies**. Rerun the script after editing a skill. Agents
+and commands are still symlinked. Details in
+[`harnesses/claude-code/README.md`](../harnesses/claude-code/README.md).
 
-Everything else is still open.
-
-## The constraint
-
-Harnesses scan a **flat** skills directory — typically `~/.agents/skills/`,
-`~/.claude/skills/`, `~/.cursor/skills/`. This repo nests by layer for human
-legibility, so any install has to **flatten**:
+Claude Code scans a **flat** skills directory, so layers are flattened:
 
 ```
 domains/engineering/coding/skills/code-review/          ─┐
-domains/engineering/product/skills/user-story-writing/  ─┼─▶ <target>/skills/<name>/
+domains/engineering/product/skills/user-story-writing/  ─┼─▶ ~/.claude/skills/<name>/
 core/skills/agentic-authoring/                          ─┘
 ```
 
-That's why skill names must be unique repo-wide (see `docs/conventions.md`) —
-flattening two layers with the same skill name loses one of them.
+That is why skill names must be unique repo-wide (see `docs/conventions.md`).
 
-Everything else follows from that: `AGENTS.md` is read from the project or home
-directory, MCP servers are per-harness config, and providers are environment
-variables.
+## Third-party skills
 
----
+Add them yourself, inside the repo, then install:
 
-## Options
+```bash
+npx skills add mattpocock/skills --skill tdd -a universal --copy   # writes skills-lock.json
+harnesses/claude-code/install.sh                                   # installs globally
+```
 
-**Write an install script for it**, as `harnesses/<name>/install.sh`. That is
-what Claude Code has: symlinks, a manifest of everything it created, an
-uninstall that reverses exactly that, and a refusal to touch anything it did
-not make. Copy it as the starting point for another harness.
+Commit `skills-lock.json`; it is the record of where each skill came from.
+`.agents/skills/` is gitignored. On a new machine:
 
-**Adopt an existing manager.** Several already do this fan-out and can treat
-this repo as the source:
-
-| Tool | Approach |
-|---|---|
-| [ai-rulez](https://github.com/Goldziher/ai-rulez) | Generates native configs for 20+ tools; `verify` command for CI |
-| [block/ai-rules](https://github.com/block/ai-rules) | Generate or symlink; from Block, who maintain Goose |
-| [ai-rules-sync](https://github.com/lbb00/ai-rules-sync) | Symlinks from a git repo — closest to this repo's shape |
-| [Vercel `skills`](https://github.com/vercel-labs/skills) | Package manager for skills; `npx skills add <local path>` fans out to 76+ agents |
-
-The content doesn't change either way. That's the point of keeping it in the
-standard formats.
-
----
+```bash
+npx skills experimental_install     # restores .agents/skills/ from the lock
+harnesses/claude-code/install.sh
+```
 
 ## Extending in another repo
 

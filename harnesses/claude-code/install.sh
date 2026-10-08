@@ -10,8 +10,12 @@
 #                                   (repeatable, e.g. engineering.product)
 #   ./install.sh --no-context       install no contexts at all
 #
-# Symlinks, so edits in the repo are live. Idempotent. Never removes anything
-# it did not create — a manifest records every path, and uninstall reverses it.
+# Agents and commands are symlinked, so edits are live. Skills go through
+# `npx skills add -g`, which COPIES — rerun this script after editing a skill.
+# Idempotent. Never removes anything it did not create.
+#
+# Third-party skills live in .agents/skills/ (restored from skills-lock.json by
+# `npx skills experimental_install`) and are installed from there.
 
 set -euo pipefail
 
@@ -36,13 +40,20 @@ while [ $# -gt 0 ]; do
     --no-context) NOCTX=1 ;;
     --context)    shift; [ $# -gt 0 ] || { echo "--context needs a value" >&2; exit 2; }
                   CONTEXTS="$CONTEXTS $1" ;;
-    -h|--help)    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
   shift
 done
 [ -n "$CONTEXTS" ] || CONTEXTS="$DEFAULT_CONTEXTS"
 [ "$NOCTX" = 1 ] && CONTEXTS=""
+
+for tool in npx claude python3; do
+  command -v "$tool" >/dev/null 2>&1 || { echo "missing required tool: $tool" >&2; exit 1; }
+done
+
+SKILLS_CLI="npx --yes skills"
+THIRD_PARTY="$REPO/.agents/skills"
 
 created=0; skipped=0; conflicts=0; removed=0
 say()   { printf '  %s\n' "$*"; }
@@ -66,6 +77,21 @@ layer_path() {
     core) printf 'core' ;;
     *)    printf 'domains/%s' "$(printf '%s' "$1" | tr '.' '/')" ;;
   esac
+}
+
+# Skill names under a skills/ directory, one per line.
+skill_names() {
+  for s in "$1"/*/; do
+    [ -f "${s}SKILL.md" ] && basename "$s"
+  done
+}
+
+# "name<TAB>source" for every skill installed globally for Claude Code.
+installed_skills() {
+  $SKILLS_CLI list -g -a claude-code --json </dev/null 2>/dev/null | python3 -c '
+import json, sys
+for s in json.load(sys.stdin):
+    print(s["name"] + "\t" + (s.get("source") or ""))'
 }
 
 # ---------------------------------------------------------------- uninstall
@@ -96,6 +122,20 @@ if [ "$UNINSTALL" = 1 ]; then
     head_ "Would remove $removed item(s). Nothing was changed."
   else
     head_ "Removed $removed item(s)."
+  fi
+  # Skills installed by `npx skills` aren't in the manifest; remove every global
+  # skill whose recorded source is this repo.
+  mine=()
+  while IFS=$'\t' read -r name src; do
+    case "$src" in "$REPO"/*) mine+=("$name") ;; esac
+  done < <(installed_skills)
+  if [ "${#mine[@]}" -gt 0 ]; then
+    if [ "$DRY" = 1 ]; then
+      say "would remove  ${#mine[@]} skill(s): ${mine[*]}"
+    else
+      $SKILLS_CLI remove "${mine[@]}" -g -a claude-code -y </dev/null >/dev/null
+      say "removed  ${#mine[@]} skill(s): ${mine[*]}"
+    fi
   fi
   say "MCP servers, plugins and settings.json hooks are not touched — remove"
   say "those with:"
@@ -143,12 +183,67 @@ say "into $(short "$TARGET")"
 # here. Names are unique repo-wide, which is what makes that safe.
 
 head_ "Skills"
-while IFS= read -r d; do
-  for s in "$d"/*/; do
-    [ -f "$s/SKILL.md" ] || continue
-    link "${s%/}" "$TARGET/skills/$(basename "$s")"
-  done
-done < <(find "$REPO/core" "$REPO/domains" -type d -name skills | sort)
+# Skills are installed by `npx skills add -g`, not linked. It copies, and it
+# overwrites a same-named skill without asking — so a name that exists but did
+# not come from `npx skills` is a conflict here, as it is for links.
+
+if [ -f "$REPO/skills-lock.json" ]; then
+  missing=$(python3 - "$REPO/skills-lock.json" "$THIRD_PARTY" <<'PY'
+import json, os, sys
+for n in json.load(open(sys.argv[1])).get("skills", {}):
+    if not os.path.isfile(os.path.join(sys.argv[2], n, "SKILL.md")):
+        print(n)
+PY
+  )
+  if [ -n "$missing" ]; then
+    echo "skills-lock.json lists skills missing from .agents/skills/: $(echo $missing)" >&2
+    echo "run: npx skills experimental_install" >&2
+    exit 1
+  fi
+fi
+
+sources=()
+while IFS= read -r d; do sources+=("$d"); done < <(find "$REPO/core" "$REPO/domains" -type d -name skills | sort)
+[ -d "$THIRD_PARTY" ] && sources+=("$THIRD_PARTY")
+
+dupes=$(for d in "${sources[@]}"; do skill_names "$d"; done | sort | uniq -d)
+if [ -n "$dupes" ]; then
+  echo "skill name(s) in more than one source: $(echo $dupes)" >&2
+  echo "rename or drop one — names must be unique repo-wide" >&2
+  exit 1
+fi
+
+installed="$(installed_skills)"
+for d in "${sources[@]}"; do
+  names=()
+  while IFS= read -r n; do
+    dst="$TARGET/skills/$n"
+    if [ -L "$dst" ] && [[ "$(readlink "$dst")" == "$REPO"/* ]]; then
+      # Left by the symlink-based installer; npx would write through it into the repo.
+      [ "$DRY" = 1 ] || rm "$dst"
+    elif [ -e "$dst" ] && ! printf '%s\n' "$installed" | cut -f1 | grep -qx "$n" && [ "$FORCE" != 1 ]; then
+      say "CONFLICT   $(short "$dst")  exists and was not installed by npx skills — --force to replace"
+      conflicts=$((conflicts+1)); continue
+    fi
+    names+=("$n")
+  done < <(skill_names "$d")
+  [ "${#names[@]}" -gt 0 ] || continue
+  if [ "$DRY" = 1 ]; then
+    say "would      install ${#names[@]} skill(s) from ${d#$REPO/}"
+  else
+    $SKILLS_CLI add "$d" -g -a claude-code --skill "${names[@]}" -y </dev/null >/dev/null
+    say "installed  ${#names[@]} skill(s) from ${d#$REPO/}"
+    created=$((created+${#names[@]}))
+  fi
+done
+
+# Reconcile by warning only: removing what is no longer here could delete skills
+# installed by hand.
+repo_names=$(for d in "${sources[@]}"; do skill_names "$d"; done)
+stale=$(printf '%s\n' "$installed" | while IFS=$'\t' read -r n src; do
+  if [[ "$src" == "$REPO"/* ]] && ! printf '%s\n' "$repo_names" | grep -qx "$n"; then echo "$n"; fi
+done)
+[ -z "$stale" ] || say "note       installed from this repo but no longer in it: $(echo $stale) — npx skills remove -g"
 
 for kind in agents commands; do
   head_ "$(printf '%s' "$kind" | tr '[:lower:]' '[:upper:]' | cut -c1)$(printf '%s' "$kind" | cut -c2-)"
@@ -204,34 +299,28 @@ fi
 # --- MCP ---------------------------------------------------------------------
 
 head_ "MCP servers"
-if ! command -v claude >/dev/null 2>&1; then
-  say "skipped    claude CLI not on PATH"
-elif ! command -v python3 >/dev/null 2>&1; then
-  say "skipped    python3 needed to read mcp/servers.json"
-else
-  existing="$(claude mcp list 2>/dev/null | sed 's/:.*//' || true)"
-  while IFS=$'\t' read -r name cmd args; do
-    [ -n "$name" ] || continue
-    if printf '%s\n' "$existing" | grep -qx "$name"; then
-      say "ok         $name already registered"
-    elif [ "$DRY" = 1 ]; then
-      say "would      claude mcp add -s user $name -- $cmd $args"
+existing="$(claude mcp list 2>/dev/null | sed 's/:.*//' || true)"
+while IFS=$'\t' read -r name cmd args; do
+  [ -n "$name" ] || continue
+  if printf '%s\n' "$existing" | grep -qx "$name"; then
+    say "ok         $name already registered"
+  elif [ "$DRY" = 1 ]; then
+    say "would      claude mcp add -s user $name -- $cmd $args"
+  else
+    # shellcheck disable=SC2086
+    if claude mcp add -s user "$name" -- $cmd $args >/dev/null 2>&1; then
+      say "added      $name"
     else
-      # shellcheck disable=SC2086
-      if claude mcp add -s user "$name" -- $cmd $args >/dev/null 2>&1; then
-        say "added      $name"
-      else
-        say "FAILED     $name — run by hand: claude mcp add -s user $name -- $cmd $args"
-      fi
+      say "FAILED     $name — run by hand: claude mcp add -s user $name -- $cmd $args"
     fi
-  done < <(python3 - "$REPO/mcp/servers.json" <<'PY'
+  fi
+done < <(python3 - "$REPO/mcp/servers.json" <<'PY'
 import json, sys
 for n, s in json.load(open(sys.argv[1])).get("mcpServers", {}).items():
-    if isinstance(s, dict) and "command" in s:
-        print("\t".join([n, s["command"], " ".join(s.get("args", []))]))
+  if isinstance(s, dict) and "command" in s:
+      print("\t".join([n, s["command"], " ".join(s.get("args", []))]))
 PY
-  )
-fi
+)
 
 # --- plugins -----------------------------------------------------------------
 # ponytail (github.com/DietrichGebert/ponytail) enforces a YAGNI ladder before
@@ -247,10 +336,6 @@ for c in $CONTEXTS; do
 done
 if [ "$wants_ponytail" != 1 ]; then
   say "skipped    engineering.coding not selected"
-elif ! command -v claude >/dev/null 2>&1; then
-  say "skipped    claude CLI not on PATH"
-elif ! command -v python3 >/dev/null 2>&1; then
-  say "skipped    python3 needed to check installed plugins"
 elif [ "$DRY" = 1 ]; then
   say "would      claude plugin marketplace add DietrichGebert/ponytail"
   say "would      claude plugin install ponytail@ponytail -s user"

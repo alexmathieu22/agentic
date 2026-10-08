@@ -20,11 +20,16 @@ harnesses/claude-code/install.sh
 | `--uninstall` | Remove exactly what the script created |
 | `--force` | Replace paths the script did not create |
 
-Symlinks, so edits in the repo are live — no reinstall after changing a skill.
-Idempotent: run it as often as you like.
+Requires `npx`, `claude` and `python3` on `PATH`; it fails immediately if any is
+missing. Node is pinned in the repo's `.tool-versions`; `claude` can't be pinned
+(no asdf plugin), so the script only checks it exists.
 
-`CLAUDE_HOME` and `AGENTIC_STATE` override the targets, which is how the script
-is tested against a throwaway home.
+Agents and commands are symlinked, so edits are live. **Skills are copied** by
+`npx skills add -g`: rerun the script after editing a skill. Idempotent.
+
+`AGENTIC_STATE` overrides the manifest location. To test against a throwaway
+home, set `HOME` — `npx skills` writes to `~/.claude/skills` regardless of
+`CLAUDE_HOME`.
 
 ---
 
@@ -32,7 +37,7 @@ is tested against a throwaway home.
 
 | Content | Lands at | How |
 |---|---|---|
-| Skills | `~/.claude/skills/<name>/` | symlink per skill |
+| Skills | `~/.claude/skills/<name>/` | `npx skills add -g -a claude-code`, copied |
 | Agents | `~/.claude/agents/<name>.md` | symlink per file |
 | Commands | `~/.claude/commands/<name>.md` | symlink per file |
 | Contexts | `~/.claude/CLAUDE.md` | generated file of `@` imports |
@@ -46,8 +51,24 @@ Claude Code scans **one flat
 directory per kind**. So the layers are flattened at install: every skill from
 every layer lands directly in `~/.claude/skills/`.
 
-That is exactly why skill names must be unique repo-wide. Two layers with the
-same skill name would collide here and one would silently win.
+That is exactly why skill names must be unique repo-wide. The script aborts if
+two sources — two layers, or a layer and a third-party skill — share a name.
+
+### Third-party skills
+
+Added by hand, once, from inside the repo:
+
+```bash
+npx skills add mattpocock/skills --skill tdd -a universal --copy
+```
+
+`-a universal` keeps `npx` to `.agents/skills/` — without it, `npx` writes into
+every supported agent's folder. The command records the source in
+`skills-lock.json` (committed); the copies in `.agents/skills/` are gitignored.
+`install.sh` then installs them globally from there, for Claude Code only. On a
+fresh checkout run `npx skills experimental_install` first to restore
+`.agents/skills/` from the lock. `npx skills update -p` moves them to the latest
+upstream; the lock holds a hash, not a pinned commit.
 
 ### Global memory, and what does *not* go in it
 
@@ -92,6 +113,12 @@ The script never removes anything it did not create.
 
 - Every path it writes is recorded in `~/.config/agents/claude-code.manifest`,
   and `--uninstall` reverses exactly that list.
+- A skill whose name exists in `~/.claude/skills/` but was not installed by
+  `npx skills` is a conflict. `npx skills add` would overwrite it silently, so
+  the script checks first.
+- Uninstall removes every global skill whose recorded source is this repo, via
+  `npx skills remove -g`. A skill later deleted from the repo is only reported,
+  not removed, on install.
 - A path that exists and is not ours is reported as a **conflict** and skipped.
   `--force` is the only way past it. This is what protects the `world-builder`
   skill already sitting in `~/.claude/skills/`.
