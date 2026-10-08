@@ -118,7 +118,7 @@ description: >                      # REQUIRED. Must say when NOT to delegate �
   to when an independent read matters. Not for reading a file or explaining
   what a change does.
 x-tools: [read, grep, glob, bash]   # capability intents, not any harness's tool names
-x-model: primary                    # fast | primary | deep — a tier, see providers/
+x-model: primary                    # fast | primary | deep — a tier, never a model id
 x-skills: [code-review]
 x-domain: engineering.coding
 ---
@@ -140,7 +140,7 @@ reason. If none of the three hold, the work should be done directly.
 
 `x-tools` are intents (`read`, `write`, `bash`, `web`), not tool names, because
 every harness names its tools differently. `x-model` is a tier, not a model id,
-so the same agent works on DeepSeek, Anthropic or a local model.
+so the same agent works on whichever model the harness runs.
 
 A harness without subagents can consume these as ordinary skills.
 
@@ -199,12 +199,10 @@ harnesses/<name>` must leave the repo whole and every other harness working.
 The validator greps `core/` and `domains/` for harness vocabulary to enforce it.
 
 Prefer wiring a harness to read this repo **in place** over copying or
-flattening into it. A harness that can take a list of skill roots (dsh's
-`customSkillDirs`) keeps the layering intact and makes edits live; one that
-scans a single directory needs the flattening described in `docs/install.md`.
+flattening into it. A harness that scans a single directory needs the
+flattening described in `docs/install.md`.
 
-Secrets never appear here. Name an environment variable and let `providers/`
-supply it.
+Secrets never appear here. Name an environment variable.
 
 ---
 
@@ -223,27 +221,6 @@ when inference fails. A skill that reads config before checking the repository
 in front of it will be wrong in someone else's checkout.
 
 Installed to `~/.config/agents/<topic>.yaml`; the copy here is the template.
-
----
-
-## Providers — `providers/<name>.env.example`
-
-One file per backend. Plain shell, sourceable by anything:
-
-```sh
-export DEEPSEEK_BASE_URL="https://api.deepseek.com"
-export DEEPSEEK_API_KEY="__SET_ME__"
-export AGENT_MODEL_FAST="deepseek-v4"
-export AGENT_MODEL_PRIMARY="deepseek-v4-pro"
-export AGENT_MODEL_DEEP="deepseek-v4-pro"
-```
-
-`AGENT_MODEL_{FAST,PRIMARY,DEEP}` are this repo's tier names, matching `x-model`
-in agent definitions. A harness that reads model names from the environment
-picks these up; one that doesn't takes the values pasted into its config once.
-
-**Real values never enter this repo.** Copy an example to
-`~/.config/agents/<name>.env`, `chmod 600`, fill it in, source it.
 
 ---
 

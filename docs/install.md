@@ -1,6 +1,6 @@
 # Installing
 
-One harness is wired (`dsh`); the rest are deliberately still open. The content
+One harness is wired (`claude-code`); the rest are deliberately still open. The content
 is written to open formats precisely so this stays reversible. This file records
 the constraint and the options rather than pretending there is one answer for
 every harness.
@@ -11,13 +11,7 @@ every harness.
 
 | Harness | How | Flattens? |
 |---|---|---|
-| [`dsh`](../harnesses/dsh/README.md) | `customSkillDirs` takes a list of roots | No — layers stay as they are |
 | [`claude-code`](../harnesses/claude-code/README.md) | `install.sh`, symlinks | Yes — it scans one flat directory per kind |
-
-The two harnesses answer the constraint below differently, which is the point
-of keeping the content neutral: `dsh` is configured to read the layers in
-place, Claude Code needs them flattened, and neither fact appears anywhere in
-the content itself.
 
 Everything else is still open.
 

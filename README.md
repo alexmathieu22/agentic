@@ -52,19 +52,11 @@ Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
 | Path | What |
 |---|---|
 | `config/` | Durable preferences skills read when they fire — git host, CLI, branch naming |
-| `harnesses/` | Per-harness wiring (`dsh`, `claude-code`). Disposable — the dependency only runs this way |
+| `harnesses/` | Per-harness wiring (`claude-code`). Disposable — the dependency only runs this way |
 | `mcp/servers.json` | Every tool server, defined once |
-| `providers/` | Model endpoints per backend, as env files. **Names only, never values.** |
 | `docs/conventions.md` | Normative schemas |
 | `docs/install.md` | Getting content into a harness |
 | `templates/` | Scaffolds for new skills, agents, commands |
-
-## Provider independence
-
-`providers/` describes each backend as a plain `.env` file — DeepSeek,
-OpenRouter, Anthropic, local. Every one sets the same
-`AGENT_MODEL_{FAST,PRIMARY,DEEP}`, so agent definitions name a *tier* rather
-than a model and stay portable. Switching backend is sourcing a different file.
 
 ## Install
 
