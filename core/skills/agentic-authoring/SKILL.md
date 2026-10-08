@@ -113,6 +113,9 @@ anyway.
 
 ## Testing it
 
+Installed skills are **copies**, not links: after editing one, reinstall it
+before expecting a session to see the change.
+
 The real test is whether it fires unprompted. Start a fresh session, describe a
 situation in your own words without naming the skill, and see if it triggers. If
 it doesn't, the description is wrong — not the body.

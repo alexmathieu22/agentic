@@ -60,8 +60,10 @@ Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
 
 ## Install
 
-Not settled yet — see [`docs/install.md`](docs/install.md) for the constraint
-that matters (harnesses want a flat skills directory) and the options.
+Claude Code only, for now: `harnesses/claude-code/install.sh`. Third-party skills
+(e.g. mattpocock's) are added by hand with `npx skills add <source> -a universal
+--copy`, which records them in `skills-lock.json` — commit that file. See
+[`docs/install.md`](docs/install.md).
 
 ## Conventions
 

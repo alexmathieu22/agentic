@@ -6,6 +6,9 @@ secrets.env
 .env
 .env.*
 
+# Third-party skills restored from skills-lock.json (npx skills experimental_install)
+.agents/
+
 # Build / tooling — generated, never committed
 node_modules/
 dist/
