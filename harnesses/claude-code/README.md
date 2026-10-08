@@ -42,7 +42,7 @@ is tested against a throwaway home.
 
 ### Flattening
 
-Unlike `dsh` — which takes a list of roots — Claude Code scans **one flat
+Claude Code scans **one flat
 directory per kind**. So the layers are flattened at install: every skill from
 every layer lands directly in `~/.claude/skills/`.
 

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Alexandre's portable agent setup. Written once, in open standards, so it works
-with whatever harness and whatever model provider is current.
+with whatever harness is current. Claude Code is the only one wired today.
 
 This file is the entry point most coding agents read on their own. It is also
 what an agent should read before editing anything in this repo.
@@ -34,14 +34,13 @@ Every layer holds the same four kinds of thing, all optional:
 | `agents/` | Subagent personas | markdown + frontmatter |
 | `commands/` | Prompt macros | markdown + frontmatter |
 
-Repo-wide, outside the layers: `mcp/` (tool servers), `providers/` (model
-endpoints), `config/` (durable preferences such as git host), `harnesses/`
+Repo-wide, outside the layers: `mcp/` (tool servers), `config/` (durable preferences such as git host), `harnesses/`
 (per-harness wiring), `docs/`, `templates/`.
 
 ## Rules for editing
 
-1. **No secrets, ever.** `providers/` holds `.env.example` files naming
-   variables. Real values live in `~/.config/agents/` at mode 600, gitignored.
+1. **No secrets, ever.** Name environment variables, never values. Real values
+   live in `~/.config/agents/` at mode 600, gitignored.
 
 2. **A skill's folder name must equal its `name:` field.** The Agent Skills spec
    requires it and harnesses silently skip mismatches — no error, the skill just

@@ -80,7 +80,7 @@ Agents are the most expensive rung, so their bar is higher.
 - `x-tools` are capability **intents** — `read`, `write`, `bash`, `web` — never
   a harness's tool names. Adapters map them; unmappable ones get dropped.
 - `x-model` is a **tier** (`fast`, `primary`, `deep`), never a model id, so the
-  same agent works on DeepSeek, Anthropic or a local model.
+  same agent works on whichever model the harness runs.
 - `x-skills` must name skills that exist.
 - **The description must say when *not* to delegate.** It is what a harness
   reads when deciding, so a boundary that appears only in the body arrives

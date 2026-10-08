@@ -6,9 +6,6 @@ secrets.env
 .env
 .env.*
 
-# Vendored third-party skills are declared in vendor.yaml, not committed.
-vendor/
-
 # Build / tooling — generated, never committed
 node_modules/
 dist/
