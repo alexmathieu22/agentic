@@ -27,6 +27,26 @@ missing. Node is pinned in the repo's `.tool-versions`; `claude` can't be pinned
 **Skills are copied** by `npx skills add -g`: rerun the script after editing a
 skill. Idempotent.
 
+### Keeping it up to date
+
+Installed skills are copies, so **after editing a skill, run `install.sh`**
+before expecting a session to see the change.
+
+To rerun it automatically after `git pull` (merge or rebase), enable the hooks
+once per clone:
+
+```bash
+git config core.hooksPath harnesses/claude-code/githooks
+```
+
+`post-merge` and `post-rewrite` (rebases only; amends don't trigger it) run
+`install.sh`, and first run `npx skills experimental_install` if
+`.agents/skills/` is missing or the pull changed `skills-lock.json`. They do
+nothing in a worktree: `install.sh` writes the checkout's path into
+`~/.claude/CLAUDE.md`, so a worktree would repoint your global memory at itself.
+A failure prints a message and never blocks the pull. Editing a skill locally
+triggers nothing — there is no git event for it.
+
 `AGENTIC_STATE` overrides the manifest location. To test against a throwaway
 home, set `HOME` — `npx skills` writes to `~/.claude/skills` regardless of
 `CLAUDE_HOME`.

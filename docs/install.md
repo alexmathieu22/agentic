@@ -10,7 +10,8 @@ harnesses/claude-code/install.sh
 ```
 
 Every skill — yours and third-party — is installed with `npx skills add -g -a
-claude-code`, which **copies**. Rerun the script after editing a skill. Details in
+claude-code`, which **copies**. Rerun the script after editing a skill, or enable
+the git hook that does it on `git pull`. Details in
 [`harnesses/claude-code/README.md`](../harnesses/claude-code/README.md).
 
 Claude Code scans a **flat** skills directory, so layers are flattened:

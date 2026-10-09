@@ -1,0 +1,23 @@
+#!/bin/sh
+# Reinstall after `git pull` so ~/.claude matches the repo. Enable with:
+#   git config core.hooksPath harnesses/claude-code/githooks
+#
+# Main checkout only: install.sh writes this checkout's path into
+# ~/.claude/CLAUDE.md, so running it from a worktree would repoint your global
+# memory at the worktree.
+[ "$(git rev-parse --absolute-git-dir)" = "$(git rev-parse --path-format=absolute --git-common-dir)" ] || exit 0
+
+root=$(git rev-parse --show-toplevel)
+
+# A pulled change to the lock, or no .agents/skills/ yet, means it needs restoring first.
+if [ ! -d "$root/.agents/skills" ] || git diff --name-only ORIG_HEAD HEAD 2>/dev/null | grep -qx skills-lock.json; then
+  # Quiet on success; show the tail only if the restore fails.
+  log=$(mktemp)
+  (cd "$root" && npx --yes skills experimental_install </dev/null >"$log" 2>&1) || {
+    tail -5 "$log" >&2
+    echo "skills restore failed; run: npx skills experimental_install" >&2
+  }
+  rm -f "$log"
+fi
+
+"$root/harnesses/claude-code/install.sh" || echo "install.sh failed; run it by hand" >&2
