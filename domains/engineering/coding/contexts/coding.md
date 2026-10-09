@@ -23,6 +23,10 @@
 
 ## Git
 
+- **Start every task that will change files by loading `git-workflow`**, before
+  the first edit — without being asked. It decides branch vs worktree and
+  confirms the current branch is not the default, so branch and commits are
+  right from the start.
 - **Never commit to the default branch.** Work on a branch, or a worktree when
   the task is long-running or runs alongside another.
 - **Conventional Commits**, always: `type(scope): subject`.
