@@ -168,6 +168,21 @@ up.
 Uninstalling it is manual, same as MCP servers: `claude plugin uninstall
 ponytail`.
 
+### MCP servers needing sign-in
+
+Remote servers in `mcp/servers.json` (`"type": "http"`) are registered with
+`claude mcp add -s user --transport http`. That only registers them; **sign in
+once by hand**: open a Claude Code session, run `/mcp`, pick the server and
+finish the browser OAuth flow. Tokens stay in Claude Code, never in the repo.
+
+Linear (`https://mcp.linear.app/mcp`) is read-write. For read-only, change the
+URL to `https://mcp.linear.app/mcp/readonly`, then
+`claude mcp remove linear -s user` and rerun `install.sh` (an existing
+registration is not updated).
+
+The `design` plugin also bundles its own `linear` server. If `/mcp` lists both,
+authorize one and ignore the other.
+
 ---
 
 ## Verifying
