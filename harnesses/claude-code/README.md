@@ -150,5 +150,5 @@ harnesses/claude-code/install.sh --dry-run
 ```
 
 Then in a new session, a skill should fire without being named — describe a code review situation in your own
-words and see whether `code-review` triggers. That last one is the real test;
+words and see whether `alex-code-review` triggers. That last one is the real test;
 the rest only prove files are in place.

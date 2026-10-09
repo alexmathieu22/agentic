@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: alex-code-review
 description: >
   Use when reviewing a diff, a pull request, or code you just wrote. Finds
   correctness bugs before style issues, and states plainly what would break and

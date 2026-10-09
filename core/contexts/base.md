@@ -22,7 +22,7 @@ there.
 | Rung | Use when | Example |
 |---|---|---|
 | **Just do it** | The task is a lookup, an edit, or a question you can already answer | "What's the status of issue 412?" → run the command, report |
-| **Load a skill** | There's a repeatable procedure with real discipline that changes the outcome | Reviewing a diff → `code-review`, because the order of attention matters |
+| **Load a skill** | There's a repeatable procedure with real discipline that changes the outcome | Reviewing a diff → `alex-code-review`, because the order of attention matters |
 | **Delegate to a subagent** | Isolation is the *point* — see below | Sweeping thirty files to find where a pattern lives |
 
 Escalate only when the current rung is genuinely insufficient. Escalating for

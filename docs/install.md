@@ -16,7 +16,7 @@ claude-code`, which **copies**. Rerun the script after editing a skill. Details 
 Claude Code scans a **flat** skills directory, so layers are flattened:
 
 ```
-domains/engineering/coding/skills/code-review/          ─┐
+domains/engineering/coding/skills/alex-code-review/     ─┐
 domains/engineering/product/skills/user-story-writing/  ─┼─▶ ~/.claude/skills/<name>/
 core/skills/agentic-authoring/                          ─┘
 ```
