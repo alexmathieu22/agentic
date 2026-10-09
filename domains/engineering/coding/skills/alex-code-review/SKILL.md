@@ -19,11 +19,14 @@ work included. Not for greenfield design questions; that's `adr-writing`.
 
 ## Start with `code-review`
 
-Load `code-review` with the Skill tool and follow its process: pin the fixed
-point, find the spec and the standards, run the Standards and Spec axes in
-parallel, aggregate. It owns the mechanics; this skill changes what you report
-and how you post. If it isn't installed, say so and do the review yourself in
-the order below.
+Load the `code-review` skill and follow its process: pin the fixed point, find
+the spec and the standards, run the Standards and Spec axes in parallel,
+aggregate. It owns the mechanics; this skill changes what you report and how you
+post. If it isn't installed, say so and do the review yourself in the order
+below.
+
+Its sub-agents can't see this skill, so append the order of attention and the
+failure-scenario requirement (see Reporting) to both sub-agent prompts.
 
 `code-review` points at `/setup-matt-pocock-skills` for the issue tracker. Don't
 run that: the host is inferable from `git remote get-url origin`, with
