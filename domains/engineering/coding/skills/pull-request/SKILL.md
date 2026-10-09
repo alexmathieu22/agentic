@@ -140,6 +140,7 @@ will later mistake for unmerged work.
 ## After opening
 
 - **Respond to every comment**, even if only to say you disagree and why.
+  When an agent writes the reply, start it with 🤖 so reviewers can tell.
 - **Push fixes as new commits** while review is in progress, so reviewers can
   see what changed since they looked. Tidy up at the end if the project squashes.
 - **Never force-push a branch under active review** unless you say so first —
