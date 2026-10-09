@@ -1,0 +1,5 @@
+#!/bin/sh
+# `git pull --rebase` ends with a rewrite, not a merge. Amends rewrite too, so
+# only a rebase triggers the reinstall.
+[ "$1" = rebase ] && exec "$(dirname "$0")/post-merge"
+exit 0

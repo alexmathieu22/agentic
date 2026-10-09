@@ -31,6 +31,33 @@ skill. Idempotent.
 home, set `HOME` — `npx skills` writes to `~/.claude/skills` regardless of
 `CLAUDE_HOME`.
 
+### Keeping it up to date
+
+Installed skills are copies, so **after editing a skill, run `install.sh`**
+before expecting a session to see the change.
+
+To rerun it automatically after merges and rebases (which is what `git pull`
+does), enable the hooks once per clone:
+
+```bash
+git config core.hooksPath harnesses/claude-code/githooks
+```
+
+`post-merge` and `post-rewrite` (rebases only; amends don't trigger it) run
+`install.sh` after **any** merge or rebase in the main checkout, pulled or local
+(a `git rebase -i` to tidy commits triggers it too), and first run
+`npx skills experimental_install` if `.agents/skills/` is missing or the pull
+changed `skills-lock.json`. They do
+nothing in a worktree: `install.sh` writes the checkout's path into
+`~/.claude/CLAUDE.md`, so a worktree would repoint your global memory at itself.
+A failure prints a message and never blocks the pull. Editing a skill locally
+triggers nothing — there is no git event for it.
+
+**Trust:** enabling `core.hooksPath` means a pull runs the pulled tree's
+`install.sh` and hooks without review. Git doesn't version hooks for this reason;
+that is acceptable for a repo only you write to, and worth revisiting if others
+can push.
+
 ---
 
 ## What gets installed
