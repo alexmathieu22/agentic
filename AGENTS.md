@@ -66,6 +66,9 @@ Repo-wide, outside the layers: `mcp/` (tool servers), `config/` (durable prefere
    capability. A skill only one repo will ever use belongs in that repo's own
    `.agents/skills/`, where it takes precedence anyway.
 
+Run `python3 scripts/check.py` before committing; CI runs it on every PR. It
+enforces rules 2, 3, 5 and 6, which otherwise fail silently.
+
 ## Adding a layer
 
 A new kind of work goes under an existing area: `domains/engineering/<name>/`.

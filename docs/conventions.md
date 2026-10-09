@@ -139,7 +139,7 @@ verify. The only place a tool's own vocabulary may appear.
 **The dependency runs one way.** A harness directory may reference canonical
 content; canonical content may never reference a harness. `rm -rf
 harnesses/<name>` must leave the repo whole and every other harness working.
-The validator greps `core/` and `domains/` for harness vocabulary to enforce it.
+`scripts/check.py` greps `core/` and `domains/` for harness vocabulary to enforce it.
 
 Prefer wiring a harness to read this repo **in place** over copying or
 flattening into it. A harness that scans a single directory needs the
