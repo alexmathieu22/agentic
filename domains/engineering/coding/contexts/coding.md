@@ -12,6 +12,15 @@
 - Tests assert behaviour, not internals. A test that breaks on every refactor is
   testing the wrong thing.
 
+## Reading files
+
+- Read files through the `cachebro` MCP server's `read_file` / `read_files`
+  when it is connected, instead of the harness's own read tool or `cat`. It
+  returns a diff for a file already read this session, which saves tokens on
+  re-reads. Fall back to the native read only if the server is unavailable.
+- It writes a `.cachebro/` directory into the repo. Before the first read in a
+  repo, make sure `.cachebro/` is in that repo's `.gitignore`; add it if not.
+
 ## Git
 
 - **Never commit to the default branch.** Work on a branch, or a worktree when
