@@ -36,6 +36,17 @@ and avoids rebuilding state every time you switch. Remove it when done:
 Branch names mirror the commit type: `feat/oauth-callback`, `fix/retry-loop`,
 `docs/adr-folder-split`.
 
+**A harness-made branch (`claude/<name>-<hash>`) is a placeholder.** On a coding
+task, rename it before the first edit, inferring `<type>/<subject>` from the
+request; a small task still gets a name:
+
+```bash
+git branch -m <type>/<subject>
+```
+
+If the work turns out to be a different type, rename again before the first
+push — a pushed branch can't be renamed without closing its pull request.
+
 ## Conventional Commits
 
 ```
