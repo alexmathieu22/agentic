@@ -30,7 +30,7 @@ adopted without the others.
 core/                          base working agreement, agentic-authoring
 domains/
 └── engineering/               the software life-area
-    ├── coding/                code-review, test-first, refactor-safely,
+    ├── coding/                alex-code-review, test-first, refactor-safely,
     │                          debug-systematically, dependency-audit,
     │                          git-workflow, pull-request
     ├── architecture/          domain-driven-design, adr-writing, api-design
