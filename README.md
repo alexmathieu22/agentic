@@ -33,7 +33,7 @@ domains/
     ├── coding/                alex-code-review, test-first, refactor-safely,
     │                          debug-systematically, dependency-audit,
     │                          git-workflow, pull-request
-    ├── architecture/          domain-driven-design, adr-writing, api-design
+    ├── architecture/          domain-driven-design, api-design
     ├── product/               product-discovery, user-story-writing,
     │                          acceptance-criteria
     └── delivery/              plan-then-build, incident-response
