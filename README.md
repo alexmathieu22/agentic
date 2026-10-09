@@ -4,8 +4,9 @@ My agent setup, kept portable on purpose.
 
 Agent tooling churns fast. Anything written against a single tool's config
 format is a migration waiting to happen — so everything durable here is written
-to open, vendor-neutral standards, and nothing in the repo knows which harness
-will read it.
+to open, vendor-neutral standards, and the content never names a harness.
+Claude Code is the only harness wired today; others can be added later under
+`harnesses/`.
 
 | Standard | Used for | Governance |
 |---|---|---|
@@ -52,6 +53,7 @@ Each layer holds `skills/`, and optionally `contexts/`.
 | `mcp/servers.json` | Every tool server, defined once |
 | `docs/conventions.md` | Normative schemas |
 | `docs/install.md` | Getting content into a harness |
+| `scripts/check.py` | Checks the silent-failure rules: skill names, `x-domain`, harness vocabulary. Run by CI |
 | `templates/` | Scaffold for new skills |
 
 ## Install
