@@ -269,25 +269,36 @@ fi
 
 head_ "MCP servers"
 existing="$(claude mcp list 2>/dev/null | sed 's/:.*//' || true)"
-while IFS=$'\t' read -r name cmd args; do
+# kind is "stdio" (target = command and args) or "http" (target = URL).
+while IFS=$'\t' read -r name kind target; do
   [ -n "$name" ] || continue
+  if [ "$kind" = http ]; then
+    add="claude mcp add -s user --transport http $name $target"
+  else
+    add="claude mcp add -s user $name -- $target"
+  fi
   if printf '%s\n' "$existing" | grep -qx "$name"; then
     say "ok         $name already registered"
   elif [ "$DRY" = 1 ]; then
-    say "would      claude mcp add -s user $name -- $cmd $args"
+    say "would      $add"
   else
     # shellcheck disable=SC2086
-    if claude mcp add -s user "$name" -- $cmd $args >/dev/null 2>&1; then
+    if $add >/dev/null 2>&1; then
       say "added      $name"
+      [ "$kind" = http ] && say "           authenticate once: run /mcp in a Claude Code session"
     else
-      say "FAILED     $name — run by hand: claude mcp add -s user $name -- $cmd $args"
+      say "FAILED     $name — run by hand: $add"
     fi
   fi
 done < <(python3 - "$REPO/mcp/servers.json" <<'PY'
 import json, sys
 for n, s in json.load(open(sys.argv[1])).get("mcpServers", {}).items():
-  if isinstance(s, dict) and "command" in s:
-      print("\t".join([n, s["command"], " ".join(s.get("args", []))]))
+  if not isinstance(s, dict):
+      continue
+  if "command" in s:
+      print("\t".join([n, "stdio", " ".join([s["command"], *s.get("args", [])])]))
+  elif s.get("type") == "http" and "url" in s:
+      print("\t".join([n, "http", s["url"]]))
 PY
 )
 
