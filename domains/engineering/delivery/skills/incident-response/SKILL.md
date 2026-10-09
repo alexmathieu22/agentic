@@ -13,7 +13,7 @@ x-requires: []
 ## When this applies
 
 Users are affected and the clock is running. Not for a bug found in review —
-that's `debug-systematically`, which optimises for understanding rather than speed.
+that's `diagnosing-bugs`, which optimises for understanding rather than speed.
 
 ## Order of operations
 

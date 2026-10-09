@@ -29,6 +29,9 @@ The single highest-value practice, and the one most often skipped.
   concepts that happen to share a label. Do not unify them.
 - When two words mean one thing, force the choice and change the code.
 - The glossary is code, not a wiki page. It rots the moment it lives elsewhere.
+- To challenge terms, keep `GLOSSARY.md` current, or record a hard-to-reverse
+  decision as an ADR, use `domain-modeling`. This skill covers the structure
+  that language implies: contexts, aggregates, patterns.
 
 ## Bounded contexts
 

@@ -15,7 +15,7 @@ x-requires: [git]
 ## When this applies
 
 Any time the question is "is this change correct and would I ship it" — your own
-work included. Not for greenfield design questions; that's `adr-writing`.
+work included. Not for greenfield design questions; that's `domain-modeling`.
 
 ## Start with `code-review`
 
