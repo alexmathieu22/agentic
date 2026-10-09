@@ -40,7 +40,7 @@ and are ignored by harnesses that don't know them.
 
 ```yaml
 ---
-name: code-review                # REQUIRED. lowercase, digits, single hyphens, <=64 chars.
+name: diff-review                # REQUIRED. lowercase, digits, single hyphens, <=64 chars.
                                  # MUST equal the folder name.
 description: >                   # REQUIRED. Say WHEN to use this.
   Use when reviewing a diff, pull request, or code you just wrote, to find
