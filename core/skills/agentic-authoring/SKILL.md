@@ -1,11 +1,10 @@
 ---
 name: agentic-authoring
 description: >
-  Use when adding to or fixing this agent setup — writing a skill, agent,
-  command or context, choosing which layer it belongs in, or diagnosing a skill
-  that exists but never fires. Covers the Agent Skills spec's hard
-  requirements, descriptions that actually trigger, and the rule that an agent
-  must state when not to use it.
+  Use when adding to or fixing this agent setup — writing a skill or context,
+  choosing which layer it belongs in, or diagnosing a skill that exists but
+  never fires. Covers the Agent Skills spec's hard requirements and descriptions
+  that actually trigger.
 x-domain: core
 x-requires: []
 ---
@@ -26,7 +25,6 @@ below are specific to this repo.
 | A repeatable procedure with steps that change the outcome | a skill |
 | Always true, every turn, no procedure | a context (`contexts/`) |
 | Only ever relevant in one repository | that repo's own `.agents/skills/` |
-| A persona worth a separate context window | `agents/` |
 
 Skills cost nothing until they fire; contexts cost tokens on every turn. But a
 skill that fires and changes nothing is worse than no skill — it spends tokens
@@ -37,9 +35,9 @@ produce something *different* with it loaded. If not, don't write it.
 
 `core/contexts/base.md` sets the rule: use the cheapest rung that works — do it
 directly, load a skill, or delegate to a subagent, in that order. Write a skill
-only for the middle rung. Procedures that exist to be *followed by a whole
-persona over many turns* belong in `agents/`; facts and one-off lookups belong
-nowhere.
+only for the middle rung; facts and one-off lookups belong nowhere. This repo
+ships no agents, commands or hooks: skills are the whole surface, and a persona
+or macro that is really a procedure should be written as one.
 
 ## Hard requirements
 
@@ -72,28 +70,6 @@ If two skills could both fire, make each description say what the *other* is for
   message" does.
 - Close with "Done when" — an observable stopping condition.
 - Imperative voice. You're writing instructions, not an essay.
-
-## Agents
-
-Agents are the most expensive rung, so their bar is higher.
-
-- `x-tools` are capability **intents** — `read`, `write`, `bash`, `web` — never
-  a harness's tool names. Adapters map them; unmappable ones get dropped.
-- `x-model` is a **tier** (`fast`, `primary`, `deep`), never a model id, so the
-  same agent works on whichever model the harness runs.
-- `x-skills` must name skills that exist.
-- **The description must say when *not* to delegate.** It is what a harness
-  reads when deciding, so a boundary that appears only in the body arrives
-  after the decision is made. Open the body with a `**Not for:**` line too.
-
-Write an agent only when delegation earns its cost: context isolation, a
-genuinely different posture, or real parallelism. A persona is not a reason.
-
-## Commands
-
-Thin. A command is a prompt macro that names the skills to apply and states
-what not to do — `$ARGS` interpolates the invocation. If a command is growing
-procedure of its own, that procedure belongs in a skill it calls.
 
 ## Contexts
 

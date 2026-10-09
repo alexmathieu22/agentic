@@ -19,8 +19,9 @@ Top-level domains are **areas of life** (`engineering/`, later `life/`,
 `research/`); the level below is a **kind of work** within that area
 (`coding/`, `architecture/`, `product/`, `delivery/`).
 
-A layer contains any of `skills/`, `contexts/`, `agents/`, `commands/`. All
-four are optional — `domains/engineering/delivery/` has only skills and a command.
+A layer contains `skills/` and, optionally, `contexts/`. Skills are the only
+thing this repo ships for now; agents, commands and hooks were removed because
+nothing used them.
 
 Adding a layer means creating the directory. Layers never reference each other,
 so one can be adopted, moved, or deleted without touching the rest.
@@ -102,64 +103,6 @@ skill instead — contexts cost tokens on every single turn, skills cost nothing
 until they fire.
 
 `core/contexts/base.md` applies everywhere; the rest are opt-in per project.
-
----
-
-## Agents — `<layer>/agents/<name>.md`
-
-No cross-vendor standard exists for subagents, so this is a local schema kept
-deliberately close to what most harnesses accept.
-
-```yaml
----
-name: reviewer
-description: >                      # REQUIRED. Must say when NOT to delegate — see below.
-  Reviews a diff for correctness first, then reuse and clarity. Worth delegating
-  to when an independent read matters. Not for reading a file or explaining
-  what a change does.
-x-tools: [read, grep, glob, bash]   # capability intents, not any harness's tool names
-x-model: primary                    # fast | primary | deep — a tier, never a model id
-x-skills: [code-review]
-x-domain: engineering.coding
----
-
-System prompt, opening with a **Not for:** line.
-```
-
-### Every agent must state when *not* to use it
-
-A subagent is the most expensive rung in the ladder (`core/contexts/base.md`):
-it starts cold, re-derives context the caller already has, and returns a summary
-rather than the real output. The `description` is what a harness reads when
-deciding whether to delegate, so the boundary has to live there — not only in
-the body, which is read after the decision is already made.
-
-Delegation earns its cost in exactly three cases: **context isolation**, a
-**genuinely different posture**, or **real parallelism**. A persona is not a
-reason. If none of the three hold, the work should be done directly.
-
-`x-tools` are intents (`read`, `write`, `bash`, `web`), not tool names, because
-every harness names its tools differently. `x-model` is a tier, not a model id,
-so the same agent works on whichever model the harness runs.
-
-A harness without subagents can consume these as ordinary skills.
-
----
-
-## Commands — `<layer>/commands/<name>.md`
-
-```yaml
----
-name: review
-description: One line.
-x-args: "[base-ref]"
-x-domain: engineering.coding
----
-
-Prompt body. `$ARGS` is the invocation arguments.
-```
-
-Harnesses without slash commands can consume these as skills too.
 
 ---
 
