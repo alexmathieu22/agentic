@@ -24,8 +24,8 @@ Requires `npx`, `claude` and `python3` on `PATH`; it fails immediately if any is
 missing. Node is pinned in the repo's `.tool-versions`; `claude` can't be pinned
 (no asdf plugin), so the script only checks it exists.
 
-Agents and commands are symlinked, so edits are live. **Skills are copied** by
-`npx skills add -g`: rerun the script after editing a skill. Idempotent.
+**Skills are copied** by `npx skills add -g`: rerun the script after editing a
+skill. Idempotent.
 
 `AGENTIC_STATE` overrides the manifest location. To test against a throwaway
 home, set `HOME` — `npx skills` writes to `~/.claude/skills` regardless of
@@ -38,12 +38,9 @@ home, set `HOME` — `npx skills` writes to `~/.claude/skills` regardless of
 | Content | Lands at | How |
 |---|---|---|
 | Skills | `~/.claude/skills/<name>/` | `npx skills add -g -a claude-code`, copied |
-| Agents | `~/.claude/agents/<name>.md` | symlink per file |
-| Commands | `~/.claude/commands/<name>.md` | symlink per file |
 | Contexts | `~/.claude/CLAUDE.md` | generated file of `@` imports |
 | MCP servers | user scope | `claude mcp add -s user` |
 | Plugins | user scope | `claude plugin marketplace add` + `claude plugin install`, see below |
-| Hooks | `~/.claude/settings.json` | merged, see below |
 
 ### Flattening
 
@@ -144,38 +141,6 @@ up.
 Uninstalling it is manual, same as MCP servers: `claude plugin uninstall
 ponytail`.
 
-### Hooks
-
-`settings.json` is shared — it already holds hooks this repo does not own. So
-`merge-hooks.py` **merges** rather than overwrites: it marks its own entries
-with `_source: agentic`, replaces only those on re-run, and leaves everything
-else exactly as it was.
-
-Backups are timestamped (`settings.json.20260905-210311.bak`) and never
-overwritten. A fixed `.bak` is destroyed by the second run, which is precisely
-when the original matters most.
-
-**Unverified:** `_source` is a key this repo adds to Claude Code's own hook
-entries. Whether unknown keys are tolerated has not been tested, because no hook
-exists yet to trigger it. Confirm that before the first hook lands — a strict
-parser would break `settings.json` for every session.
-
-Neutral event names map onto Claude Code's:
-
-| `hooks/<name>.sh` | Claude Code event |
-|---|---|
-| `session-start` | `SessionStart` |
-| `session-end` | `SessionEnd` |
-| `user-prompt` | `UserPromptSubmit` |
-| `pre-tool` | `PreToolUse` |
-| `post-tool` | `PostToolUse` |
-| `notify` | `Notification` |
-| `stop` | `Stop` |
-
-**Currently a no-op.** `hooks/` holds the contract and no executables — no hook
-has earned its place yet. The path is built and tested; it wires nothing until
-there is something worth wiring.
-
 ---
 
 ## Verifying
@@ -184,7 +149,6 @@ there is something worth wiring.
 harnesses/claude-code/install.sh --dry-run
 ```
 
-Then in a new session: `/pr` and `/review` should be available, and a skill
-should fire without being named — describe a code review situation in your own
+Then in a new session, a skill should fire without being named — describe a code review situation in your own
 words and see whether `code-review` triggers. That last one is the real test;
 the rest only prove files are in place.

@@ -25,14 +25,12 @@ Top-level domains are **areas of life**, not kinds of work — `life/`,
 `research/`, `finance/` become siblings of `engineering/` when they're needed.
 Kinds of work are the level below.
 
-Every layer holds the same four kinds of thing, all optional:
+Every layer holds these, both optional:
 
 | Directory | Contents | Standard |
 |---|---|---|
 | `skills/` | Repeatable procedures, one folder each | [Agent Skills](https://agentskills.io) |
 | `contexts/` | Always-on guidance, composed into a project `AGENTS.md` | AGENTS.md fragments |
-| `agents/` | Subagent personas | markdown + frontmatter |
-| `commands/` | Prompt macros | markdown + frontmatter |
 
 Repo-wide, outside the layers: `mcp/` (tool servers), `config/` (durable preferences such as git host), `harnesses/`
 (per-harness wiring), `docs/`, `templates/`.
@@ -72,7 +70,7 @@ Repo-wide, outside the layers: `mcp/` (tool servers), `config/` (durable prefere
 
 A new kind of work goes under an existing area: `domains/engineering/<name>/`.
 A new area of life goes at the top: `domains/<area>/<kind>/`. Either way, create
-the directory with whichever of `skills/ contexts/ agents/ commands/` it needs —
+the directory with whichever of `skills/ contexts/` it needs —
 nothing else changes, because layers never reference each other.
 
 ## Conventions

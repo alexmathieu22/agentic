@@ -40,10 +40,9 @@ Only three cases:
   results.
 
 If none of those hold, do it yourself. In particular: **a persona is not a
-reason.** Fetching a ticket does not require the product-owner agent; that agent
-exists for turning a vague request into sliced, verifiable work. Invoking it to
-run a lookup pays for a whole persona and its loaded skills to do something a
-single command does better.
+reason.** Fetching a ticket does not require a specialist subagent; invoking one
+to run a lookup pays for a whole persona and its loaded skills to do something
+a single command does better.
 
 ### The same applies to skills
 

@@ -32,20 +32,16 @@ domains/
     ├── coding/                code-review, test-first, refactor-safely,
     │                          debug-systematically, dependency-audit,
     │                          git-workflow, pull-request
-    │                          agents: reviewer, debugger · cmd: review, pr
     ├── architecture/          domain-driven-design, adr-writing, api-design
-    │                          agents: architect
     ├── product/               product-discovery, user-story-writing,
     │                          acceptance-criteria
-    │                          agents: product-owner · cmd: refine
     └── delivery/              plan-then-build, incident-response
-                               cmd: plan
 ```
 
 Top-level domains are **areas of life**. `life/`, `research/`, `finance/` slot
 in beside `engineering/` when they're needed; kinds of work go one level down.
 
-Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
+Each layer holds `skills/`, and optionally `contexts/`.
 
 ## Repo-wide
 
@@ -56,7 +52,7 @@ Each layer holds any of `skills/`, `contexts/`, `agents/`, `commands/`.
 | `mcp/servers.json` | Every tool server, defined once |
 | `docs/conventions.md` | Normative schemas |
 | `docs/install.md` | Getting content into a harness |
-| `templates/` | Scaffolds for new skills, agents, commands |
+| `templates/` | Scaffold for new skills |
 
 ## Install
 

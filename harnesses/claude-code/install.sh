@@ -2,7 +2,7 @@
 #
 # Install this repo's content into Claude Code.
 #
-#   ./install.sh                    link everything
+#   ./install.sh                    install everything
 #   ./install.sh --dry-run          show what would happen, touch nothing
 #   ./install.sh --uninstall        remove exactly what this script created
 #   ./install.sh --force            replace files this script did not create
@@ -10,8 +10,8 @@
 #                                   (repeatable, e.g. engineering.product)
 #   ./install.sh --no-context       install no contexts at all
 #
-# Agents and commands are symlinked, so edits are live. Skills go through
-# `npx skills add -g`, which COPIES — rerun this script after editing a skill.
+# Skills go through `npx skills add -g`, which COPIES — rerun this script after
+# editing a skill.
 # Idempotent. Never removes anything it did not create.
 #
 # Third-party skills live in .agents/skills/ (restored from skills-lock.json by
@@ -137,7 +137,7 @@ if [ "$UNINSTALL" = 1 ]; then
       say "removed  ${#mine[@]} skill(s): ${mine[*]}"
     fi
   fi
-  say "MCP servers, plugins and settings.json hooks are not touched — remove"
+  say "MCP servers and plugins are not touched — remove"
   say "those with:"
   say "  claude mcp remove <name> -s user"
   say "  claude plugin uninstall ponytail"
@@ -151,41 +151,20 @@ mkdir -p "$STATE"
 # Never leave a half-written manifest behind on failure.
 trap 'rm -f "$MANIFEST.new"' EXIT
 
-link() {
-  local src="$1" dst="$2"
-  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
-    echo "$dst" >> "$MANIFEST.new"; skipped=$((skipped+1)); return 0
-  fi
-  if [ -e "$dst" ] || [ -L "$dst" ]; then
-    if [ "$FORCE" != 1 ]; then
-      say "CONFLICT   $(short "$dst")  exists and was not created here — --force to replace"
-      conflicts=$((conflicts+1)); return 0
-    fi
-  fi
-  if [ "$DRY" != 1 ]; then
-    mkdir -p "$(dirname "$dst")"
-    rm -rf "$dst"
-    ln -s "$src" "$dst"
-  fi
-  echo "$dst" >> "$MANIFEST.new"
-  say "linked     $(short "$dst")"
-  created=$((created+1))
-}
-
 # ---------------------------------------------------------------- install
 
 head_ "Installing $REPO"
 say "into $(short "$TARGET")"
 [ "$DRY" = 1 ] && say "(dry run — nothing will be written)"
 
-# --- skills, agents, commands ------------------------------------------------
-# Claude Code scans one flat directory per kind, so the layers are flattened
+# --- skills ------------------------------------------------------------------
+# Claude Code scans one flat skills directory, so the layers are flattened
 # here. Names are unique repo-wide, which is what makes that safe.
 
 head_ "Skills"
 # Skills are installed by `npx skills add -g`, not linked. It copies, and it
 # overwrites a same-named skill without asking — so a name that exists but did
-# not come from `npx skills` is a conflict here, as it is for links.
+# not come from `npx skills` is a conflict here.
 
 if [ -f "$REPO/skills-lock.json" ]; then
   missing=$(python3 - "$REPO/skills-lock.json" "$THIRD_PARTY" <<'PY'
@@ -244,16 +223,6 @@ stale=$(printf '%s\n' "$installed" | while IFS=$'\t' read -r n src; do
   if [[ "$src" == "$REPO"/* ]] && ! printf '%s\n' "$repo_names" | grep -qx "$n"; then echo "$n"; fi
 done)
 [ -z "$stale" ] || say "note       installed from this repo but no longer in it: $(echo $stale) — npx skills remove -g"
-
-for kind in agents commands; do
-  head_ "$(printf '%s' "$kind" | tr '[:lower:]' '[:upper:]' | cut -c1)$(printf '%s' "$kind" | cut -c2-)"
-  while IFS= read -r d; do
-    for f in "$d"/*.md; do
-      [ -f "$f" ] || continue
-      link "$f" "$TARGET/$kind/$(basename "$f")"
-    done
-  done < <(find "$REPO/core" "$REPO/domains" -type d -name "$kind" | sort)
-done
 
 # --- global memory -----------------------------------------------------------
 # Claude Code reads CLAUDE.md, not AGENTS.md. What belongs in *global* memory is
@@ -361,21 +330,18 @@ else
   fi
 fi
 
-# --- hooks -------------------------------------------------------------------
-
-head_ "Hooks"
-hook_count=$(find "$REPO/hooks" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')
-if [ "$hook_count" = 0 ]; then
-  say "none       hooks/ contains no executables — nothing to wire"
-  say "           (the contract is defined; no hook has earned its place yet)"
-elif [ "$DRY" = 1 ]; then
-  say "would      merge $hook_count hook(s) into $(short "$TARGET/settings.json")"
-else
-  say "found $hook_count hook(s) — merging into $(short "$TARGET/settings.json")"
-  python3 "$(dirname "${BASH_SOURCE[0]}")/merge-hooks.py" "$REPO" "$TARGET/settings.json"
-fi
-
 # ---------------------------------------------------------------- finish
+
+# A previous run may have linked things this one no longer installs (agents and
+# commands, before they were removed). Remove those links — only symlinks, only
+# ones the old manifest recorded.
+if [ -f "$MANIFEST" ]; then
+  while IFS= read -r p; do
+    [ -L "$p" ] && ! grep -qxF "$p" "$MANIFEST.new" || continue
+    [ "$DRY" = 1 ] || rm "$p"
+    say "removed    $(short "$p")  (no longer installed)"
+  done < "$MANIFEST"
+fi
 
 if [ "$DRY" != 1 ]; then
   mv "$MANIFEST.new" "$MANIFEST"
@@ -384,7 +350,7 @@ trap - EXIT
 rm -f "$MANIFEST.new"
 
 head_ "Done."
-say "$created linked, $skipped already correct, $conflicts conflict(s)"
+say "$created installed, $skipped already correct, $conflicts conflict(s)"
 [ "$conflicts" -gt 0 ] && say "rerun with --force to replace conflicting paths"
 say "manifest: $(short "$MANIFEST")"
 exit 0
