@@ -306,11 +306,14 @@ PY
 # Third-party Claude Code plugins (ponytail, and the mods) are listed in
 # plugins.json, not in repo content: installing them any other way would put
 # harness vocabulary (marketplaces, plugin ids) into canonical content. An entry
-# with a "context" is installed only when that context is selected.
+# with a "context" is installed only when that context is selected; a source that
+# is a directory of this repo (mods/) is added as a local marketplace.
 
 head_ "Plugins"
 while IFS=$'\t' read -r source marketplace name ctx; do
   [ -n "$name" ] || continue
+  # A source that is a directory of this repo is a local marketplace.
+  [ -d "$REPO/$source" ] && source="$REPO/$source"
   if [ -n "$ctx" ] && ! printf ' %s ' "$CONTEXTS" | grep -q " $ctx "; then
     say "skipped    $name ($ctx not selected)"; continue
   fi

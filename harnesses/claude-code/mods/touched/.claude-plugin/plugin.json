@@ -1,0 +1,23 @@
+{
+  "name": "touched",
+  "version": "0.1.0",
+  "description": "A /touched pane: the files Claude read or edited this session, with git branch, line counts and what is not committed.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "editor": {
+      "type": "string",
+      "title": "Editor",
+      "description": "The macOS app that opens a file clicked in the pane",
+      "default": "Visual Studio Code",
+      "options": [
+        "Visual Studio Code",
+        "Cursor",
+        "Zed",
+        "Sublime Text",
+        "IntelliJ IDEA",
+        "WebStorm",
+        "PyCharm"
+      ]
+    }
+  }
+}

@@ -159,6 +159,12 @@ harness vocabulary, so it is wired here rather than under `domains/`.
 | Plugin | From | Why |
 |---|---|---|
 | [ponytail](https://github.com/DietrichGebert/ponytail) | DietrichGebert/ponytail | Pushes the agent toward the smallest solution that works. Only with `engineering.coding`. |
+| [touched](mods/touched/README.md) | this repo, `mods/` | A pane of the files Claude read or edited, with git status and session stats. Open with `/touched`. |
+
+A `source` that is a directory of this repo (`mods/`) is added as a local
+marketplace, so edits to a mod there are read in place (`/reload-plugins`). Mods
+run inside Claude Code with your permissions, unsandboxed, and your deny rules
+do not cover them; read one before adding it.
 
 For each entry the script runs `claude plugin marketplace add <source>` then
 `claude plugin install <name>@<marketplace> -s user`; both are skipped if

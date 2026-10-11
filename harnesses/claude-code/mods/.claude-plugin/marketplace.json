@@ -1,0 +1,8 @@
+{
+  "name": "agentic-mods",
+  "owner": { "name": "Alexandre Mathieu" },
+  "description": "Claude Code mods written for this setup",
+  "plugins": [
+    { "name": "touched", "source": "./touched", "description": "A pane of the files Claude read or edited, with git status and session stats" }
+  ]
+}
