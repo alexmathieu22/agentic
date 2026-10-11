@@ -24,8 +24,8 @@ async function refreshGit($: EngineInterface) {
   const top = await run(['git', 'rev-parse', '--show-toplevel'])
   if (top.exitCode !== 0) return update($, git, () => null)
   const [status, numstat] = await Promise.all([
-    run(['git', 'status', '--porcelain=v1', '-b']),
-    run(['git', 'diff', 'HEAD', '--numstat']),
+    run(['git', 'status', '--porcelain=v1', '-z', '-b']),
+    run(['git', 'diff', 'HEAD', '--numstat', '-z']),
   ])
   await update($, git, () => summarize(top.stdout.trim(), status.stdout, numstat.stdout))
 }
