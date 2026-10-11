@@ -11,6 +11,8 @@ import { Overview } from './variants'
 type SvgElement = (props: { source: string; alt: string; width?: number; height?: number }) => unknown
 
 const PANE = 'touched'
+// Newest first; a session that reads thousands of files would otherwise grow state and every redraw.
+const MAX_FILES = 300
 const files = atom({ plugin: 'touched', key: 'files' } as const, [] as Touch[])
 const git = atom({ plugin: 'touched', key: 'git' } as const, null as GitSummary | null)
 const stats = atom({ plugin: 'touched', key: 'stats' } as const, { calls: 0, failed: 0, byTool: {} } as Stats)
@@ -38,7 +40,7 @@ async function touch($: EngineInterface, path: string, kind: 'read' | 'edit') {
     return [
       { path, isRead: old?.isRead || kind === 'read', isEdited: old?.isEdited || kind === 'edit', at },
       ...rest,
-    ]
+    ].slice(0, MAX_FILES)
   })
 }
 
