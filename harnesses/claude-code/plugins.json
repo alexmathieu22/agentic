@@ -1,0 +1,15 @@
+{
+  "plugins": [
+    {
+      "source": "DietrichGebert/ponytail",
+      "marketplace": "ponytail",
+      "name": "ponytail",
+      "context": "engineering.coding"
+    },
+    {
+      "source": "harnesses/claude-code/mods",
+      "marketplace": "agentic-mods",
+      "name": "touched"
+    }
+  ]
+}

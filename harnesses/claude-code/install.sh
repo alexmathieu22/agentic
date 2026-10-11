@@ -140,7 +140,7 @@ if [ "$UNINSTALL" = 1 ]; then
   say "MCP servers and plugins are not touched — remove"
   say "those with:"
   say "  claude mcp remove <name> -s user"
-  say "  claude plugin uninstall ponytail"
+  say "  claude plugin uninstall <name>   (names in plugins.json)"
   exit 0
 fi
 
@@ -303,43 +303,50 @@ PY
 )
 
 # --- plugins -----------------------------------------------------------------
-# ponytail (github.com/DietrichGebert/ponytail) enforces a YAGNI ladder before
-# writing code. It's a third-party Claude Code plugin, not repo content, so it
-# rides along with the engineering.coding context rather than living in
-# domains/ — installing it any other way would put harness vocabulary
-# (marketplaces, plugin ids) into canonical content.
+# Third-party Claude Code plugins (ponytail, and the mods) are listed in
+# plugins.json, not in repo content: installing them any other way would put
+# harness vocabulary (marketplaces, plugin ids) into canonical content. An entry
+# with a "context" is installed only when that context is selected; a source that
+# is a directory of this repo (mods/) is added as a local marketplace.
 
 head_ "Plugins"
-wants_ponytail=0
-for c in $CONTEXTS; do
-  [ "$c" = "engineering.coding" ] && wants_ponytail=1
-done
-if [ "$wants_ponytail" != 1 ]; then
-  say "skipped    engineering.coding not selected"
-elif [ "$DRY" = 1 ]; then
-  say "would      claude plugin marketplace add DietrichGebert/ponytail"
-  say "would      claude plugin install ponytail@ponytail -s user"
-else
+while IFS=$'\t' read -r source marketplace name ctx; do
+  [ -n "$name" ] || continue
+  # A source that is a directory of this repo is a local marketplace.
+  [ -d "$REPO/$source" ] && source="$REPO/$source"
+  if [ -n "$ctx" ] && ! printf ' %s ' "$CONTEXTS" | grep -q " $ctx "; then
+    say "skipped    $name ($ctx not selected)"; continue
+  fi
+  if [ "$DRY" = 1 ]; then
+    say "would      claude plugin marketplace add $source"
+    say "would      claude plugin install $name@$marketplace -s user"
+    continue
+  fi
   has_marketplace=$(claude plugin marketplace list --json 2>/dev/null \
-    | python3 -c "import json,sys; print('1' if any(m.get('name')=='ponytail' for m in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
+    | python3 -c "import json,sys; print('1' if any(m.get('name')=='$marketplace' for m in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
   if [ "$has_marketplace" = 1 ]; then
-    say "ok         marketplace ponytail already added"
-  elif claude plugin marketplace add DietrichGebert/ponytail >/dev/null 2>&1; then
-    say "added      marketplace ponytail"
+    say "ok         marketplace $marketplace already added"
+  elif claude plugin marketplace add "$source" >/dev/null 2>&1; then
+    say "added      marketplace $marketplace"
   else
-    say "FAILED     marketplace add — run by hand: claude plugin marketplace add DietrichGebert/ponytail"
+    say "FAILED     marketplace add — run by hand: claude plugin marketplace add $source"
   fi
 
   has_plugin=$(claude plugin list --json 2>/dev/null \
-    | python3 -c "import json,sys; print('1' if any(p.get('name')=='ponytail' for p in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
+    | python3 -c "import json,sys; print('1' if any(p.get('name')=='$name' for p in json.load(sys.stdin)) else '0')" 2>/dev/null || echo 0)
   if [ "$has_plugin" = 1 ]; then
-    say "ok         ponytail already installed"
-  elif claude plugin install ponytail@ponytail -s user >/dev/null 2>&1; then
-    say "installed  ponytail — restart Claude Code to activate"
+    say "ok         $name already installed"
+  elif claude plugin install "$name@$marketplace" -s user >/dev/null 2>&1; then
+    say "installed  $name — restart Claude Code to activate"
   else
-    say "FAILED     plugin install — run by hand: claude plugin install ponytail@ponytail"
+    say "FAILED     plugin install — run by hand: claude plugin install $name@$marketplace"
   fi
-fi
+done < <(python3 - "$(dirname "${BASH_SOURCE[0]}")/plugins.json" <<'PY'
+import json, sys
+for p in json.load(open(sys.argv[1]))["plugins"]:
+    print("\t".join([p["source"], p["marketplace"], p["name"], p.get("context", "")]))
+PY
+)
 
 # ---------------------------------------------------------------- finish
 
