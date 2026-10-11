@@ -151,22 +151,21 @@ The script never removes anything it did not create.
 
 ### Plugins
 
-Installing `engineering.coding` (the default) also installs
-[ponytail](https://github.com/DietrichGebert/ponytail) — a third-party plugin
-that pushes the agent toward the smallest solution that works (YAGNI, stdlib
-first, no unrequested abstractions) before it writes code. It's not repo
-content: it's a Claude Code marketplace plugin, so it's wired here rather than
-living in `domains/engineering/coding/`, which would put a harness-specific
-plugin id into canonical content.
+Third-party Claude Code plugins are listed in [`plugins.json`](plugins.json)
+(marketplace source, marketplace name, plugin name, and an optional `context`
+that gates the entry). They are not repo content: a marketplace plugin id is
+harness vocabulary, so it is wired here rather than under `domains/`.
 
-The script runs `claude plugin marketplace add DietrichGebert/ponytail`, then
-`claude plugin install ponytail@ponytail -s user`; both are skipped if already
-present, and skipped entirely if `engineering.coding` isn't selected. It does
-not restart Claude Code — a running session needs a restart to pick the plugin
-up.
+| Plugin | From | Why |
+|---|---|---|
+| [ponytail](https://github.com/DietrichGebert/ponytail) | DietrichGebert/ponytail | Pushes the agent toward the smallest solution that works. Only with `engineering.coding`. |
 
-Uninstalling it is manual, same as MCP servers: `claude plugin uninstall
-ponytail`.
+For each entry the script runs `claude plugin marketplace add <source>` then
+`claude plugin install <name>@<marketplace> -s user`; both are skipped if
+already present. It does not restart Claude Code — a running session needs a
+restart to pick a plugin up.
+
+Uninstalling is manual, same as MCP servers: `claude plugin uninstall <name>`.
 
 ### MCP servers needing sign-in
 
