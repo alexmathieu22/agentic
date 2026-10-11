@@ -30,7 +30,7 @@ expanded tree of every file Claude read, edited or wrote this session:
 **Session** — tool calls made (with how many failed and the four most used
 tools), the time since the session started, and how full the context window is.
 
-Bottom row: **Open in Visual Studio Code** (`o`) opens the session's working
+Bottom row: **Open in \<editor\>** (`o`, Visual Studio Code by default) opens the session's working
 folder, **Refresh** (`r`) re-reads git, **Close** (`q`).
 
 ## Refresh behaviour
@@ -38,7 +38,8 @@ folder, **Refresh** (`r`) re-reads git, **Close** (`q`).
 The file list and the counts update as Claude works. Git status refreshes after
 each `Edit` or `Write`. Changes made through `Bash` (a commit, `sed`, a checkout)
 are not noticed until you press Refresh. Counts start when the mod loads, so
-calls made earlier in a session are not included.
+calls made earlier in a session are not included. The list keeps the 300 most
+recent files.
 
 ## Settings
 
