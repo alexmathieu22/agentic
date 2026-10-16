@@ -21,7 +21,7 @@ note goes and what it looks like**; the mechanics belong to the skills below.
 | Read, create, search, set properties, daily note | `obsidian-cli` (Obsidian must be open) |
 | Turn a URL into clean Markdown | `defuddle` |
 | Render a note from a template plus data | `knap` |
-| Database-style views of notes | `obsidian-bases` — only if asked |
+| Database-style views of notes | `obsidian-bases` — for tracked notes (see below); otherwise only if asked |
 | Visual maps | `json-canvas` — only if asked |
 
 ## When this applies
@@ -35,6 +35,45 @@ Any write into the vault. Not for reading or searching it — that is just
   `<Category>/<Subcategory>/<Title>.md`. Most notes are this.
 - **Daily note** — one per day, a log and an index. It links to the atomic notes
   from that day and holds no durable content of its own.
+
+## Vault conventions
+
+- `Templates/` holds the templates (`Daily`, `Tech to explore`). Start a note
+  from one when it exists, rather than writing the properties by hand.
+- `Home.md` is the entry point and links one hub per area: `Job`, `Tech`,
+  `OpenSource`, `Life`, `School`. A new area gets a hub and a line there.
+- **Every note is linked from its area's hub** (`Job/Job.md`, `Tech/Tech.md`, …)
+  under the matching heading. Add the line when you create the note, and add
+  `Up: [[Hub]]` plus a `## Related` list of genuinely related notes at its
+  end. Hubs are real wikilinks, not Bases, because the graph ignores embeds.
+- Areas split into subfolders by kind, e.g. `Job/Investigations`, `Job/Ideas`,
+  `Job/People`, `Job/Reference`, `Life/Kitchen`, `Life/Finance`. Reuse one
+  before inventing another.
+- `Tech/To explore/Inbox.md` is where raw links go when there is no time to
+  write a note. Promote an item to a tracked note and delete it from the inbox.
+- New attachments go in `Attachments/`.
+
+## Tracked notes: technologies to explore
+
+Something to try later is a note with a status, not a bullet in a list. File it
+as `Tech/To explore/<Category>/<Name>.md` from the `Tech to explore` template:
+
+```yaml
+---
+type: tech
+category: AI animation
+status: to-explore      # to-explore | explored
+created: 2026-10-16
+source: https://…
+tags: [topic]
+---
+```
+
+One line on what it is, then notes. Reuse an existing category folder before
+creating one. Link rivals to each other (`Compare: [[Other]]`). When the user
+has tried it, set `status: explored` and add a verdict; do not move the file.
+`Tech/To explore/Index.base` lists everything by category in two views, so
+never maintain a list by hand.
 
 ## Writing an atomic note
 
