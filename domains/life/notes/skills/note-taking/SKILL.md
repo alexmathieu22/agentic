@@ -40,8 +40,17 @@ Any write into the vault. Not for reading or searching it — that is just
 
 - `Templates/` holds the templates (`Daily`, `Tech to explore`). Start a note
   from one when it exists, rather than writing the properties by hand.
-- `Home.md` is the entry point and links each area. A new top-level folder gets
-  a line there.
+- `Home.md` is the entry point and links one hub per area: `Job`, `Tech`,
+  `OpenSource`, `Life`, `School`. A new area gets a hub and a line there.
+- **Every note is linked from its area's hub** (`Job/Job.md`, `Tech/Tech.md`, …)
+  under the matching heading. Add the line when you create the note, and add
+  `Up: [[Hub]]` plus a `## Related` list of genuinely related notes at its
+  end. Hubs are real wikilinks, not Bases, because the graph ignores embeds.
+- Areas split into subfolders by kind, e.g. `Job/Investigations`, `Job/Ideas`,
+  `Job/People`, `Job/Reference`, `Life/Kitchen`, `Life/Finance`. Reuse one
+  before inventing another.
+- `Tech/To explore/Inbox.md` is where raw links go when there is no time to
+  write a note. Promote an item to a tracked note and delete it from the inbox.
 - New attachments go in `Attachments/`.
 
 ## Tracked notes: technologies to explore
