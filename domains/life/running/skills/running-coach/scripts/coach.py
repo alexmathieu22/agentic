@@ -11,10 +11,12 @@
   coach.py week [--date D]            Monday to Sunday around D: planned vs done
   coach.py plan add D KIND KM [--pace M:SS] [--note TEXT]
   coach.py plan rm ID [ID ...]
+  coach.py notes                      where the athlete notes live, and what they say
 
-Every command takes --json. Paths come from RUNNING_COACH_DB (default
-~/.local/share/running-coach/running.db) and GARMIN_TOKENS (default ~/.garminconnect,
-the garminconnect library's own default, so another tool's login is reused).
+Every command takes --json. The database and the notes live in RUNNING_COACH_HOME
+(default ~/.local/share/running-coach), outside any repository. Garmin tokens live in
+GARMIN_TOKENS (default ~/.garminconnect, the garminconnect library's own default, so
+another tool's login is reused).
 """
 import argparse
 import getpass
@@ -25,7 +27,8 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
-DB = Path(os.environ.get("RUNNING_COACH_DB", "~/.local/share/running-coach/running.db")).expanduser()
+HOME = Path(os.environ.get("RUNNING_COACH_HOME", "~/.local/share/running-coach")).expanduser()
+DB, NOTES = HOME / "running.db", HOME / "athlete.md"
 TOKENS = str(Path(os.environ.get("GARMIN_TOKENS", "~/.garminconnect")).expanduser())
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, date TEXT, start_time TEXT, name TEXT,
@@ -150,6 +153,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="coach.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("login", parents=[common])
+    sub.add_parser("notes", parents=[common])
     sub.add_parser("sync", parents=[common]).add_argument("--days", type=int, default=90, help="days to fetch on first sync")
     for name in ("today", "week"):
         sub.add_parser(name, parents=[common]).add_argument("--date", type=date.fromisoformat, default=date.today())
@@ -166,6 +170,10 @@ def main(argv=None):
     if a.cmd == "login":
         garmin(input("Garmin email: ").strip(), getpass.getpass("Garmin password: "))
         return print(f"Logged in. Tokens saved to {TOKENS}")
+    if a.cmd == "notes":
+        text = NOTES.read_text() if NOTES.exists() else ""
+        return print(json.dumps({"path": str(NOTES), "text": text}, indent=2) if a.json
+                     else f"{NOTES}\n\n{text or '(no notes yet)'}")
     conn, today = connect(a.db), date.today()
     if a.cmd == "sync":
         result = {"added": sync(conn, garmin(), a.days, today)}

@@ -13,8 +13,9 @@ x-requires: [python3, uv]
 # Running coach
 
 Two routines over one CLI, `scripts/coach.py`. It keeps runs synced from Garmin
-Connect and the planned runs in a local SQLite file; nothing about the user is
-stored in this skill.
+Connect, the planned runs and the athlete notes in `RUNNING_COACH_HOME`
+(default `~/.local/share/running-coach`), outside any repository. Nothing about
+the user is stored in this skill.
 
 Run it as `uv run scripts/coach.py <command>` (uv installs `garminconnect`
 from the script's header). Add `--json` to any command when you need the data
@@ -28,6 +29,7 @@ rather than the summary.
 | `week [--date D]` | Monday to Sunday around D: km done vs planned, day by day |
 | `plan add D KIND KM [--pace M:SS] [--note TEXT]` | Add a planned run. KIND: easy, long, tempo, intervals, recovery, race, rest |
 | `plan rm ID ...` | Remove planned runs by the IDs `today` and `week` print |
+| `notes` | Path and content of the athlete notes (below) |
 
 Verdicts: on target (within 10% of the distance and 5% of the target pace), too
 short, too long, too slow, too fast, missed, to do. A run is matched to a plan
@@ -36,9 +38,31 @@ on the same day only; a run on another day shows as an extra.
 If `sync` fails because the login expired or Garmin rate-limits (HTTP 429), say
 so and stop. Don't retry sign-ins: retrying extends the block.
 
+## Athlete notes — the memory between sessions
+
+`notes` prints the path of a Markdown file that carries what the database
+can't: races and goals, benchmarks, heart-rate zones and training paces, the
+season outline, preferences (days, other sports, injuries), and why the plan
+looks the way it does. **Read it at the start of every routine**; plan from it,
+not from scratch.
+
+Write to it (with your file tools, at that path) whenever the user tells you
+something lasting, a benchmark changes, or the weekly routine changes the plan.
+Keep it current, not a transcript:
+
+- Fixed sections: `Races and goals`, `Benchmarks`, `Zones and paces`,
+  `Season outline`, `Preferences`, `Log`.
+- Replace stale facts in place; put a date on every benchmark.
+- `Log`: one dated line per decision and its reason, newest first. Trim
+  entries older than a season to a single summary line.
+- Mark what is unconfirmed (a race date not yet published) as such.
+
+If the file doesn't exist, create it with those sections the first time there
+is something to put in it.
+
 ## Daily routine — "did I run, and how did it go?"
 
-1. `sync`, then `today --json`.
+1. `notes`, `sync`, then `today --json`.
 2. Say in two or three lines: what was planned, what was done, the verdict. If
    a run is missing, check whether yesterday's or tomorrow's plan holds it
    before calling it missed.
@@ -47,8 +71,9 @@ so and stop. Don't retry sign-ins: retrying extends the block.
 
 ## Weekly routine — "adjust the coming week"
 
-1. `sync`, then `week --json` for the week just ending and `week --date <next
-   Monday> --json` for the one coming.
+1. `notes`, `sync`, then `week --json` for the week just ending and `week
+   --date <next Monday> --json` for the one coming. Place the coming week in
+   the season outline: weeks to the next race, and which phase that is.
 2. Summarise the week just ending: km done against planned, verdicts that repeat.
 3. Propose changes to the coming week, with a reason for each. Conservative
    defaults, which the user's own rules override:
@@ -59,9 +84,12 @@ so and stop. Don't retry sign-ins: retrying extends the block.
      repeated "too slow" on quality sessions → ease the target pace by 5–10 s/km.
    - Keep one long run and at most two hard sessions (tempo, intervals, race),
      never on consecutive days.
+   - Check benchmarks against the goal: a new best or a checkpoint missed
+     changes the paces and, if needed, the goal. Say which, and why.
 4. **Show the changes and wait for a yes**, then apply them with `plan rm` and
    `plan add`, and show `week` again.
-5. Offer to sync the calendar (below) for the weeks that changed.
+5. Update the athlete notes: benchmarks, the outline if it moved, a `Log` line.
+6. Offer to sync the calendar (below) for the weeks that changed.
 
 This is a generic template, not medical or coaching advice; say so if the user
 mentions pain or injury, and suggest a professional.
