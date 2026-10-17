@@ -47,18 +47,32 @@ def connect(path=DB) -> sqlite3.Connection:
     return conn
 
 
+LOGIN_CMD = f"uv run {Path(__file__).resolve()} login"
+RUN_LOGIN = f"The user signs in once, in their own terminal:\n  {LOGIN_CMD}"
+
+
 def garmin(email=None, password=None):
     try:
-        from garminconnect import Garmin
+        from garminconnect import Garmin, GarminConnectTooManyRequestsError
     except ImportError:
         sys.exit("garminconnect is not installed. Run this script with `uv run`, or install it in a virtualenv.")
     if email:
         api = Garmin(email, password, prompt_mfa=lambda: input("MFA code: ").strip())
-    elif Path(TOKENS).exists():
-        api = Garmin()
-    else:
-        sys.exit("No saved Garmin login. Run `coach.py login` once.")
-    api.login(TOKENS)  # loads saved tokens, or signs in and saves them
+        try:
+            api.login(TOKENS)  # signs in and saves the tokens
+        except GarminConnectTooManyRequestsError:
+            sys.exit("Garmin is rate-limiting sign-ins (HTTP 429). Wait a few hours; retrying early extends the block.")
+        except Exception as e:  # noqa: BLE001 - wrong password, MFA, network: all end the same way
+            sys.exit(f"Garmin sign-in failed: {e}\nCheck the details at https://connect.garmin.com, then wait "
+                     "before trying again: repeated attempts get rate-limited.")
+        return api
+    if not Path(TOKENS).exists():
+        sys.exit(f"No saved Garmin login in {TOKENS}.\n{RUN_LOGIN}")
+    api = Garmin()
+    try:
+        api.login(TOKENS)  # loads the saved tokens and refreshes them
+    except Exception as e:  # noqa: BLE001 - expired or revoked tokens, a changed password, an auth change
+        sys.exit(f"The saved Garmin login no longer works ({e}).\n{RUN_LOGIN}")
     return api
 
 
@@ -168,6 +182,8 @@ def main(argv=None):
     a = p.parse_args(argv)
 
     if a.cmd == "login":
+        if not sys.stdin.isatty():
+            sys.exit(f"login asks for a password, so it only runs in a terminal.\n{RUN_LOGIN}")
         garmin(input("Garmin email: ").strip(), getpass.getpass("Garmin password: "))
         return print(f"Logged in. Tokens saved to {TOKENS}")
     if a.cmd == "notes":
