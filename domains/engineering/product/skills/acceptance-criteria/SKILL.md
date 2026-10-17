@@ -4,8 +4,8 @@ description: >
   Use when a story, ticket, or requirement needs conditions someone else can
   verify — before development starts, or when a "done" claim is being disputed.
   Produces criteria that translate directly into tests.
-x-domain: engineering.product
-x-requires: []
+metadata:
+  domain: engineering.product
 ---
 
 # Acceptance criteria

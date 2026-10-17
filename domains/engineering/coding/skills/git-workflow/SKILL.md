@@ -5,8 +5,9 @@ description: >
   deciding between a branch and a worktree, splitting a working tree that has
   become several changes, or cleaning up history before it leaves the machine.
   Covers Conventional Commits, atomic commits, and rebasing to fix mistakes.
-x-domain: engineering.coding
-x-requires: [git]
+metadata:
+  domain: engineering.coding
+compatibility: Requires git
 ---
 
 # Git workflow

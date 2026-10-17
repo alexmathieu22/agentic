@@ -4,8 +4,8 @@ description: >
   Use when designing or reviewing an interface others will depend on — HTTP
   endpoints, a library's public surface, an event schema, an RPC contract.
   Focuses on making misuse hard and evolution possible.
-x-domain: engineering.architecture
-x-requires: []
+metadata:
+  domain: engineering.architecture
 ---
 
 # API design

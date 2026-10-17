@@ -4,8 +4,9 @@ description: >
   Use when restructuring code that must keep behaving identically — extracting,
   renaming, splitting modules, changing an internal interface. Keeps the change
   reviewable and prevents behaviour drifting in under cover of a large diff.
-x-domain: engineering.coding
-x-requires: [git]
+metadata:
+  domain: engineering.coding
+compatibility: Requires git
 ---
 
 # Refactor safely

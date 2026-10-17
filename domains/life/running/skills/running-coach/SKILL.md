@@ -6,8 +6,9 @@ description: >
   "plan next week", "adjust my plan" — or wants planned runs put on their
   calendar. Syncs runs from Garmin Connect into a local database and compares
   them with the planned runs it holds.
-x-domain: life.running
-x-requires: [python3, uv]
+metadata:
+  domain: life.running
+compatibility: Requires python3 and uv
 ---
 
 # Running coach

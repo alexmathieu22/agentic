@@ -6,8 +6,9 @@ description: >
   what I learned", or "do my daily note" / "wrap up the day". Sets where notes go
   and how they are formatted, then points at the Obsidian skills that do the
   mechanics. For Obsidian syntax alone, use obsidian-markdown.
-x-domain: life.notes
-x-requires: [obsidian]
+metadata:
+  domain: life.notes
+compatibility: Requires obsidian
 ---
 
 # Note-taking

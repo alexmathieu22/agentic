@@ -4,8 +4,8 @@ description: >
   Use before starting any implementation that touches more than a couple of
   files, has several valid approaches, or where being wrong means redoing the
   work. Produces an agreed plan first, so the expensive part happens once.
-x-domain: engineering.delivery
-x-requires: []
+metadata:
+  domain: engineering.delivery
 ---
 
 # Plan then build

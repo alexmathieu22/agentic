@@ -4,8 +4,8 @@ description: >
   Use when something is broken in production right now — an outage, degradation,
   data problem, or a page. Prioritises restoring service over understanding it,
   and preserves what's needed for the postmortem afterwards.
-x-domain: engineering.delivery
-x-requires: []
+metadata:
+  domain: engineering.delivery
 ---
 
 # Incident response

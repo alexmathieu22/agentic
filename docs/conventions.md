@@ -35,8 +35,8 @@ consequence, below.
 ## Skills — `<layer>/skills/<name>/SKILL.md`
 
 Conforms to the [Agent Skills specification](https://agentskills.io). Two fields
-are required; everything else is optional. `x-` keys are this repo's extensions
-and are ignored by harnesses that don't know them.
+are required; everything else is optional. Only spec fields are used — the
+reference validator (`skills-ref validate`) rejects unknown top-level keys.
 
 ```yaml
 ---
@@ -45,8 +45,9 @@ name: diff-review                # REQUIRED. lowercase, digits, single hyphens, 
 description: >                   # REQUIRED. Say WHEN to use this.
   Use when reviewing a diff, pull request, or code you just wrote, to find
   correctness bugs before style issues and to say plainly what would break.
-x-domain: engineering.coding     # MUST match the layer path, dot-separated
-x-requires: [git]                # binaries assumed present
+metadata:
+  domain: engineering.coding   # MUST match the layer path, dot-separated
+compatibility: Requires git      # only if binaries are needed; omit otherwise
 ---
 
 Markdown instructions.
@@ -73,7 +74,7 @@ Optional supporting directories inside the skill folder:
    `engineering/coding/review` and `engineering/product/review` would collide
    and one would win non-deterministically.
 
-`x-domain` is what survives flattening — it's how an installed skill can be
+`metadata.domain` is what survives flattening — it's how an installed skill can be
 traced back to the layer it came from.
 
 ### Writing a description

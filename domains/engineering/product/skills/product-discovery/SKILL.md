@@ -5,8 +5,8 @@ description: >
   dashboard") and the underlying problem hasn't been stated, or when scoping
   something new and the requirements are still vague. Gets to the real problem
   before anyone estimates.
-x-domain: engineering.product
-x-requires: []
+metadata:
+  domain: engineering.product
 ---
 
 # Product discovery
