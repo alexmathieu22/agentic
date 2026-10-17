@@ -61,6 +61,18 @@ class WeekTest(unittest.TestCase):
         self.assertEqual(([r["id"] for r in before["extras"]], before["counts_for"]), (["sun"], []))
         self.assertEqual(after["plans"][0]["run"]["id"], "tue")
 
+    def test_moving_swapped_plans_matches_each_run(self):
+        # Tempo planned Tuesday was run Monday, and Monday's easy run was done Tuesday.
+        conn = db([("2026-10-12", "easy", 6, None), ("2026-10-13", "tempo", 10, None)],
+                  [("mon", "2026-10-12", 10000, 3000), ("tue", "2026-10-13", 6000, 2100)])
+        verdicts = lambda: [(p["kind"], p["run"]["id"], p["verdict"])
+                            for d in coach.week(conn, MON, today=date(2026, 10, 17))["days"] for p in d["plans"]]
+        self.assertEqual(verdicts(), [("easy", "mon", "too long"), ("tempo", "tue", "too short")])
+        self.assertTrue(coach.move(conn, 1, date(2026, 10, 13)))
+        self.assertTrue(coach.move(conn, 2, MON))
+        self.assertEqual(verdicts(), [("tempo", "mon", "on target"), ("easy", "tue", "on target")])
+        self.assertFalse(coach.move(conn, 99, MON))
+
     def test_run_without_distance_does_not_crash(self):
         conn = db([("2026-10-13", "easy", 6, 360)], [("z", "2026-10-13", 0, 600)])
         day = coach.days(conn, date(2026, 10, 13), date(2026, 10, 13), today=date(2026, 10, 17))[0]
