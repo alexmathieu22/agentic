@@ -157,6 +157,34 @@ head_ "Installing $REPO"
 say "into $(short "$TARGET")"
 [ "$DRY" = 1 ] && say "(dry run — nothing will be written)"
 
+# --- tools -------------------------------------------------------------------
+# Binaries skills rely on (x-requires) are pinned in .tool-versions.
+
+head_ "Tools"
+if ! command -v asdf >/dev/null 2>&1; then
+  say "skipped    asdf not installed — install what .tool-versions lists by hand"
+else
+  plugins="$(asdf plugin list 2>/dev/null || true)"
+  while read -r plugin _; do
+    case "$plugin" in ''|\#*) continue ;; esac
+    printf '%s\n' "$plugins" | grep -qx "$plugin" && continue
+    if [ "$DRY" = 1 ]; then
+      say "would      asdf plugin add $plugin"
+    elif asdf plugin add "$plugin" >/dev/null 2>&1; then
+      say "added      asdf plugin $plugin"
+    else
+      say "FAILED     run by hand: asdf plugin add $plugin"
+    fi
+  done < "$REPO/.tool-versions"
+  if [ "$DRY" = 1 ]; then
+    say "would      asdf install"
+  elif (cd "$REPO" && asdf install >/dev/null 2>&1); then
+    say "ok         every tool in .tool-versions is installed"
+  else
+    say "FAILED     run by hand: (cd $(short "$REPO") && asdf install)"
+  fi
+fi
+
 # --- skills ------------------------------------------------------------------
 # Claude Code scans one flat skills directory, so the layers are flattened
 # here. Names are unique repo-wide, which is what makes that safe.
