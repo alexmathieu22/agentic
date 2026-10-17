@@ -24,6 +24,11 @@ core/skills/agentic-authoring/                          ─┘
 
 That is why skill names must be unique repo-wide (see `docs/conventions.md`).
 
+The script also installs the tools in `.tool-versions` with asdf, and pins
+each one in `~/.tool-versions` unless you already pin a version there:
+installed skills run from any folder, where this repo's `.tool-versions`
+doesn't apply.
+
 ## Third-party skills
 
 Add them yourself, inside the repo, then install:
