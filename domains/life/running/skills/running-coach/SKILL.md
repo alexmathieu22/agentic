@@ -32,8 +32,12 @@ rather than the summary.
 | `notes` | Path and content of the athlete notes (below) |
 
 Verdicts: on target (within 10% of the distance and 5% of the target pace), too
-short, too long, too slow, too fast, missed, to do. A run is matched to a plan
-on the same day only; a run on another day shows as an extra.
+short, too long, too slow, too fast, missed, to do. Each plan takes the longest
+free run on its own day, else the day after, else the day before, so a run
+moved by a day still counts for its plan; that run's own day lists it under
+`counts_for`. A plan is only missed once the day after it has passed too. Runs
+matched to no plan are extras. Weekly km done counts runs by the day they were
+run.
 
 ### First use, and when the login stops working
 
@@ -71,9 +75,9 @@ is something to put in it.
 ## Daily routine — "did I run, and how did it go?"
 
 1. `notes`, `sync`, then `today --json`.
-2. Say in two or three lines: what was planned, what was done, the verdict. If
-   a run is missing, check whether yesterday's or tomorrow's plan holds it
-   before calling it missed.
+2. Say in two or three lines: what was planned, what was done, the verdict.
+   The CLI already matches runs moved by a day; use your judgement for what it
+   can't see, such as two sessions swapped or a run split in two.
 3. One observation that matters this week, if any — "that's the second short
    long run", not a lecture. No change to the plan here; that is weekly.
 
