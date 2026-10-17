@@ -5,8 +5,9 @@ description: >
   preparing a branch to be reviewed. Covers the checks before opening, what the
   description must carry that the diff cannot, and sizing. For commits,
   branches and rewriting history, use git-workflow instead.
-x-domain: engineering.coding
-x-requires: [git]
+metadata:
+  domain: engineering.coding
+compatibility: Requires git
 ---
 
 # Pull requests

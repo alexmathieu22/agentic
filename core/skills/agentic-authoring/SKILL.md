@@ -5,8 +5,8 @@ description: >
   choosing which layer it belongs in, or diagnosing a skill that exists but
   never fires. Covers the Agent Skills spec's hard requirements and descriptions
   that actually trigger.
-x-domain: core
-x-requires: []
+metadata:
+  domain: core
 ---
 
 # Authoring for this repo
@@ -14,7 +14,7 @@ x-requires: []
 ## When this applies
 
 Adding any content here, or diagnosing a skill that exists but is never used.
-Not for writing a skill in some other project — the layer and `x-domain` rules
+Not for writing a skill in some other project — the layer and `metadata.domain` rules
 below are specific to this repo.
 
 ## Does this belong in a skill at all?

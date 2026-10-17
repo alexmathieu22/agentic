@@ -4,8 +4,8 @@ description: >
   Say WHEN to use this — the situations, artifacts and words someone would
   actually use. Only this text is loaded at startup; if it names the topic
   rather than the trigger, the skill will never fire.
-x-domain: engineering.coding
-x-requires: []
+metadata:
+  domain: engineering.coding
 ---
 
 # Skill name

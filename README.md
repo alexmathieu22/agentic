@@ -55,7 +55,7 @@ Each layer holds `skills/`, and optionally `contexts/`.
 | `mcp/servers.json` | Every tool server, defined once |
 | `docs/conventions.md` | Normative schemas |
 | `docs/install.md` | Getting content into a harness |
-| `scripts/check.py` | Checks the silent-failure rules: skill names, `x-domain`, harness vocabulary. Run by CI |
+| `scripts/check.py` | Checks the silent-failure rules: skill names, `metadata.domain`, harness vocabulary. Run by CI |
 | `templates/` | Scaffold for new skills |
 
 ## Install

@@ -4,8 +4,8 @@ description: >
   Use before adding a dependency, when reviewing a version bump, or when asked
   whether a package is safe to adopt. Weighs the real cost of a dependency
   against writing the code yourself.
-x-domain: engineering.coding
-x-requires: []
+metadata:
+  domain: engineering.coding
 ---
 
 # Dependency audit

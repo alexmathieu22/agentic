@@ -158,7 +158,7 @@ say "into $(short "$TARGET")"
 [ "$DRY" = 1 ] && say "(dry run — nothing will be written)"
 
 # --- tools -------------------------------------------------------------------
-# Binaries skills rely on (x-requires) are pinned in .tool-versions.
+# Binaries skills rely on (see their `compatibility`) are pinned in .tool-versions.
 
 head_ "Tools"
 if ! command -v asdf >/dev/null 2>&1; then

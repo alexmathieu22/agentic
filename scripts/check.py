@@ -2,7 +2,7 @@
 """Check the rules that otherwise fail silently. Exits 1 and lists every problem.
 
 Skill rules: folder name == `name:`, valid name, non-empty description, names
-unique repo-wide, `x-domain` matches the layer path. Content rule: core/ and
+unique repo-wide, `metadata.domain` matches the layer path. Content rule: core/ and
 domains/ never name a harness (AGENTS.md rule 6).
 """
 import re
@@ -49,8 +49,10 @@ for skill_md in sorted(ROOT.glob("core/skills/*/SKILL.md")) + sorted(ROOT.glob("
         problems.append(f"{rel}: invalid name '{name}'")
     if not fm.get("description"):
         problems.append(f"{rel}: empty description")
-    if fm.get("x-domain") != layer_domain(d):
-        problems.append(f"{rel}: x-domain '{fm.get('x-domain')}' != '{layer_domain(d)}'")
+    domain = re.search(r"\bdomain:\s*(\S+)", fm.get("metadata", ""))
+    domain = domain.group(1) if domain else None
+    if domain != layer_domain(d):
+        problems.append(f"{rel}: metadata.domain '{domain}' != '{layer_domain(d)}'")
     if name in seen:
         problems.append(f"{rel}: name '{name}' also used by {seen[name]}")
     seen.setdefault(name, rel)

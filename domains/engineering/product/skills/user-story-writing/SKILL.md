@@ -4,8 +4,8 @@ description: >
   Use when turning a validated problem into work a team can pick up — writing or
   splitting user stories, or fixing a backlog of vague tickets. Applies INVEST
   and vertical slicing.
-x-domain: engineering.product
-x-requires: []
+metadata:
+  domain: engineering.product
 ---
 
 # Writing user stories

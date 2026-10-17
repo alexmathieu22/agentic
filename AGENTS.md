@@ -53,7 +53,7 @@ Repo-wide, outside the layers: `mcp/` (tool servers), `config/` (durable prefere
    (~100 tokens per skill). If it doesn't say *when* to use the skill, the skill
    never fires. Write the trigger, not the topic.
 
-5. **`x-domain:` must match the path** — `engineering.coding`, `engineering.product`, `core`.
+5. **`metadata.domain` must match the path** — `engineering.coding`, `engineering.product`, `core`.
    It's what lets a flattened install be traced back to its layer.
 
 6. **No harness vocabulary in content, and the dependency runs one way.**

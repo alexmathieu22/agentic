@@ -5,8 +5,8 @@ description: >
   boundary belongs, or when the code's vocabulary has drifted from what the
   people who own the problem actually say. Covers ubiquitous language, bounded
   contexts, aggregates and the tactical patterns.
-x-domain: engineering.architecture
-x-requires: []
+metadata:
+  domain: engineering.architecture
 ---
 
 # Domain-driven design

@@ -6,8 +6,9 @@ description: >
   code-review skill with my own rules: correctness before style, a failure
   scenario for every finding, and every posted comment prefixed with 🤖. Prefer
   this over code-review when both could fire.
-x-domain: engineering.coding
-x-requires: [git]
+metadata:
+  domain: engineering.coding
+compatibility: Requires git
 ---
 
 # Alex's code review
