@@ -37,7 +37,8 @@ domains/
 │   │                          acceptance-criteria
 │   └── delivery/              plan-then-build, incident-response
 └── life/
-    └── notes/                 note-taking (Obsidian house style)
+    ├── notes/                 note-taking (Obsidian house style)
+    └── running/               running-coach (Garmin runs vs a training plan)
 ```
 
 Top-level domains are **areas of life**. `life/`, `research/`, `finance/` slot
