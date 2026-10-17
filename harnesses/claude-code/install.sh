@@ -183,6 +183,19 @@ else
   else
     say "FAILED     run by hand: (cd $(short "$REPO") && asdf install)"
   fi
+  # Installed skills run from wherever the agent is, not from this repo, so each
+  # tool also needs a user-level version. A version already pinned there wins.
+  while read -r tool version _; do
+    case "$tool" in ''|\#*) continue ;; esac
+    grep -Eq "^$tool[[:space:]]" "$HOME/.tool-versions" 2>/dev/null && continue
+    if [ "$DRY" = 1 ]; then
+      say "would      asdf set -u $tool $version"
+    elif asdf set -u "$tool" "$version" >/dev/null 2>&1; then
+      say "pinned     $tool $version in ~/.tool-versions"
+    else
+      say "FAILED     run by hand: asdf set -u $tool $version"
+    fi
+  done < "$REPO/.tool-versions"
 fi
 
 # --- skills ------------------------------------------------------------------
