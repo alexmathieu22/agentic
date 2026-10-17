@@ -62,7 +62,7 @@ def garmin(email=None, password=None):
             api.login(TOKENS)  # signs in and saves the tokens
         except GarminConnectTooManyRequestsError:
             sys.exit("Garmin is rate-limiting sign-ins (HTTP 429). Wait a few hours; retrying early extends the block.")
-        except Exception as e:  # noqa: BLE001 - wrong password, MFA, network: all end the same way
+        except Exception as e:  # wrong password, MFA, network: all end the same way
             sys.exit(f"Garmin sign-in failed: {e}\nCheck the details at https://connect.garmin.com, then wait "
                      "before trying again: repeated attempts get rate-limited.")
         return api
@@ -71,7 +71,7 @@ def garmin(email=None, password=None):
     api = Garmin()
     try:
         api.login(TOKENS)  # loads the saved tokens and refreshes them
-    except Exception as e:  # noqa: BLE001 - expired or revoked tokens, a changed password, an auth change
+    except Exception as e:  # expired or revoked tokens, a changed password, an auth change
         sys.exit(f"The saved Garmin login no longer works ({e}).\n{RUN_LOGIN}")
     return api
 
@@ -79,33 +79,31 @@ def garmin(email=None, password=None):
 def sync(conn, api, days: int, today: date) -> int:
     last = conn.execute("SELECT max(date) FROM runs").fetchone()[0]
     start = date.fromisoformat(last) if last else today - timedelta(days=days)
-    added = 0
+    before = conn.execute("SELECT count(*) FROM runs").fetchone()[0]
     for a in api.get_activities_by_date(start.isoformat(), today.isoformat()) or []:
         if "running" not in ((a.get("activityType") or {}).get("typeKey") or ""):
             continue
         st = (a.get("startTimeLocal") or "").replace(" ", "T")[:19]
-        cur = conn.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?)",
+        conn.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?)",
                            (f"garmin:{a['activityId']}", st[:10], st, a.get("activityName"),
                             a.get("distance"), a.get("duration"), a.get("averageHR")))
-        added += cur.rowcount
     conn.commit()
-    return added
+    return conn.execute("SELECT count(*) FROM runs").fetchone()[0] - before
 
 
 def verdict(plan: dict, run: dict | None, today: date) -> str:
     if run is None:
         # A plan can still be met the day after, so it is only missed once that day has passed too.
         return "missed" if date.fromisoformat(plan["date"]) < today - timedelta(days=1) else "to do"
-    ratio = run["distance_m"] / 1000 / plan["distance_km"] if plan["distance_km"] else 1
+    ratio = (run["distance_m"] or 0) / 1000 / plan["distance_km"] if plan["distance_km"] else 1
     if ratio < 1 - DIST_TOL:
         return "too short"
     if ratio > 1 + DIST_TOL:
         return "too long"
-    if plan["pace_s"]:
-        pace = run["duration_s"] / (run["distance_m"] / 1000)
-        if pace > plan["pace_s"] * (1 + PACE_TOL):
+    if plan["pace_s"] and (p := run_pace(run)):
+        if p > plan["pace_s"] * (1 + PACE_TOL):
             return "too slow"
-        if pace < plan["pace_s"] * (1 - PACE_TOL):
+        if p < plan["pace_s"] * (1 - PACE_TOL):
             return "too fast"
     return "on target"
 
@@ -153,12 +151,17 @@ def week(conn, day: date, today: date) -> dict:
     return {"monday": monday.isoformat(), "planned_km": round(planned, 1), "done_km": round(done, 1), "days": ds}
 
 
+def run_pace(run: dict) -> float | None:
+    """Seconds per km, or None for a run with no distance or duration (a manual entry, say)."""
+    return run["duration_s"] / (run["distance_m"] / 1000) if run["distance_m"] and run["duration_s"] else None
+
+
 def pace(s) -> str:
     return f"{int(s // 60)}:{int(s % 60):02d}/km" if s else ""
 
 
 def run_text(r: dict) -> str:
-    return f"{r['distance_m'] / 1000:.1f} km at {pace(r['duration_s'] / (r['distance_m'] / 1000))}" + (
+    return f"{(r['distance_m'] or 0) / 1000:.1f} km at {pace(run_pace(r)) or '?'}" + (
         f", HR {r['avg_hr']:.0f}" if r["avg_hr"] else "")
 
 
@@ -192,7 +195,7 @@ def main(argv=None):
     plan = sub.add_parser("plan").add_subparsers(dest="action", required=True)
     add = plan.add_parser("add", parents=[common])
     add.add_argument("date", type=date.fromisoformat)
-    add.add_argument("kind", help="easy, long, tempo, intervals, recovery, race or rest")
+    add.add_argument("kind", choices=["easy", "long", "tempo", "intervals", "recovery", "race", "rest"])
     add.add_argument("km", type=float)
     add.add_argument("--pace", type=parse_pace, help="target pace as M:SS per km")
     add.add_argument("--note")
@@ -211,7 +214,7 @@ def main(argv=None):
     conn, today = connect(a.db), date.today()
     if a.cmd == "sync":
         result = {"added": sync(conn, garmin(), a.days, today)}
-        text = f"{result['added']} runs synced"
+        text = f"{result['added']} new runs synced"
     elif a.cmd == "today":
         result = days(conn, a.date, a.date, today)[0]
         text = day_text(result)

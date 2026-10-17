@@ -61,6 +61,12 @@ class WeekTest(unittest.TestCase):
         self.assertEqual(([r["id"] for r in before["extras"]], before["counts_for"]), (["sun"], []))
         self.assertEqual(after["plans"][0]["run"]["id"], "tue")
 
+    def test_run_without_distance_does_not_crash(self):
+        conn = db([("2026-10-13", "easy", 6, 360)], [("z", "2026-10-13", 0, 600)])
+        day = coach.days(conn, date(2026, 10, 13), date(2026, 10, 13), today=date(2026, 10, 17))[0]
+        self.assertEqual(day["plans"][0]["verdict"], "too short")
+        self.assertIn("0.0 km at ?", coach.day_text(day))
+
 
 if __name__ == "__main__":
     unittest.main()
