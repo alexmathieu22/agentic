@@ -61,18 +61,41 @@ so and stop. Don't retry sign-ins: retrying extends the block.
      never on consecutive days.
 4. **Show the changes and wait for a yes**, then apply them with `plan rm` and
    `plan add`, and show `week` again.
+5. Offer to sync the calendar (below) for the weeks that changed.
 
 This is a generic template, not medical or coaching advice; say so if the user
 mentions pain or injury, and suggest a professional.
 
 ## Calendar
 
-When the user wants planned runs on their calendar, use whatever calendar tool
-the session has. One event per planned run: title `<kind> <km> km`, the target
-pace and note in the description, all-day unless the user gives a time. Ask
-before creating or changing events, and list existing running events in that
-week first so nothing is added twice. No calendar tool → say so; don't
-improvise one.
+"Put my plan on my calendar", "sync my calendar": mirror the planned runs into
+the user's calendar with whatever calendar tool the session has (Google
+Calendar, for instance). No calendar tool → say so; don't improvise one.
+
+The plan in the database is the source of truth; the calendar is a copy. Each
+planned run is one event, recognised by a marker line in its description, so
+only events this skill made are ever changed:
+
+| Field | Value |
+|---|---|
+| Title | `Run: <kind> <km> km` |
+| Time | all-day on the plan's date (start that day, end the next), unless the user gives a time |
+| Availability | free, so it doesn't block their day |
+| Description | target pace and note, if any, then a last line `running-coach plan <id>` |
+
+1. Pick the range: today to the end of next week, unless the user says otherwise.
+   Get the plans with `week --date D --json` for each week in it (skip `rest`).
+2. List the calendar's events in that range, searching for the text
+   `running-coach plan`, and read the plan id off each marker line.
+3. Work out the difference:
+   - a plan with no event → **create**;
+   - an event whose date, title or description no longer matches its plan → **update**;
+   - an event whose plan id no longer exists in that range → **delete**.
+4. **Show the list (create / update / delete, one line each) and wait for a
+   yes.** Then apply it and report what changed. Send no notifications.
+
+Never touch an event without the marker, even if it looks like a run. Past
+days are left alone: they're history.
 
 ## Done when
 
