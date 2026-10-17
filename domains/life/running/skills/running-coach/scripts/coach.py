@@ -94,7 +94,8 @@ def sync(conn, api, days: int, today: date) -> int:
 
 def verdict(plan: dict, run: dict | None, today: date) -> str:
     if run is None:
-        return "missed" if plan["date"] < today.isoformat() else "to do"
+        # A plan can still be met the day after, so it is only missed once that day has passed too.
+        return "missed" if date.fromisoformat(plan["date"]) < today - timedelta(days=1) else "to do"
     ratio = run["distance_m"] / 1000 / plan["distance_km"] if plan["distance_km"] else 1
     if ratio < 1 - DIST_TOL:
         return "too short"
@@ -110,29 +111,45 @@ def verdict(plan: dict, run: dict | None, today: date) -> str:
 
 
 def days(conn, lo: date, hi: date, today: date) -> list[dict]:
-    """One entry per day: its plans, each paired with the longest unclaimed run that day, and the runs left over."""
+    """One entry per day from lo to hi: its plans with the run matched to each, the runs done that day for a plan
+    on another day, and the runs left over. A plan takes the longest free run on its own day, else the day after,
+    else the day before, so a run moved by a day still counts for its plan."""
+    # Matching over the whole table, not just lo..hi, so every view pairs the same run with the same plan.
+    # ponytail: rematches everything per call; fine for years of personal runs, window it if it ever isn't
+    plans = [dict(p) for p in conn.execute("SELECT * FROM plans ORDER BY date, distance_km DESC")]
+    free = [dict(r) for r in conn.execute("SELECT * FROM runs ORDER BY date, distance_m DESC")]
+    for p in plans:
+        p["run"] = None
+    for shift in (0, 1, -1):
+        for p in plans:
+            if p["run"] or p["kind"] == "rest":
+                continue
+            want = (date.fromisoformat(p["date"]) + timedelta(days=shift)).isoformat()
+            p["run"] = next((r for r in free if r["date"] == want), None)
+            if p["run"]:
+                free.remove(p["run"])
     out = []
     d = lo
     while d <= hi:
         iso = d.isoformat()
-        runs = [dict(r) for r in conn.execute("SELECT * FROM runs WHERE date = ? ORDER BY distance_m DESC", (iso,))]
-        plans = []
-        # ponytail: same-day matching only; a run done a day early or late counts as an extra
-        for p in conn.execute("SELECT * FROM plans WHERE date = ? ORDER BY distance_km DESC", (iso,)):
-            p = dict(p)
-            p["run"] = runs.pop(0) if runs and p["kind"] != "rest" else None
+        mine = [p for p in plans if p["date"] == iso]
+        for p in mine:
             p["verdict"] = "rest" if p["kind"] == "rest" else verdict(p, p["run"], today)
-            plans.append(p)
-        out.append({"date": iso, "plans": plans, "extras": runs})
+        moved = [{"plan_id": p["id"], "plan_date": p["date"], "run": p["run"]}
+                 for p in plans if p["run"] and p["run"]["date"] == iso and p["date"] != iso]
+        out.append({"date": iso, "plans": mine, "counts_for": moved, "extras": [r for r in free if r["date"] == iso]})
         d += timedelta(days=1)
     return out
 
 
 def week(conn, day: date, today: date) -> dict:
     monday = day - timedelta(days=day.weekday())
-    ds = days(conn, monday, monday + timedelta(days=6), today)
+    sunday = monday + timedelta(days=6)
+    ds = days(conn, monday, sunday, today)
     planned = sum(p["distance_km"] for d in ds for p in d["plans"] if p["kind"] != "rest")
-    done = sum(r["distance_m"] for d in ds for r in [p["run"] for p in d["plans"] if p["run"]] + d["extras"]) / 1000
+    # Distance done is counted by the day it was run, whichever plan it was matched to.
+    done = conn.execute("SELECT coalesce(sum(distance_m), 0) FROM runs WHERE date BETWEEN ? AND ?",
+                        (monday.isoformat(), sunday.isoformat())).fetchone()[0] / 1000
     return {"monday": monday.isoformat(), "planned_km": round(planned, 1), "done_km": round(done, 1), "days": ds}
 
 
@@ -149,8 +166,9 @@ def day_text(d: dict) -> str:
     lines = [d["date"]]
     for p in d["plans"]:
         target = f"{p['kind']} {p['distance_km']:g} km {pace(p['pace_s'])}".strip()
-        done = f" -> {run_text(p['run'])}" if p["run"] else ""
+        done = f" -> {run_text(p['run'])}" + (f" on {p['run']['date']}" if p["run"]["date"] != p["date"] else "") if p["run"] else ""
         lines.append(f"  [{p['id']}] {target}{done}: {p['verdict']}" + (f"  ({p['note']})" if p["note"] else ""))
+    lines += [f"  {run_text(m['run'])}: counts for [{m['plan_id']}] on {m['plan_date']}" for m in d["counts_for"]]
     lines += [f"  extra: {run_text(r)}" for r in d["extras"]]
     return "\n".join(lines if len(lines) > 1 else lines + ["  nothing planned or done"])
 
