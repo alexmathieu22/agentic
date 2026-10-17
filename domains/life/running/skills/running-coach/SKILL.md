@@ -23,7 +23,7 @@ rather than the summary.
 
 | Command | Does |
 |---|---|
-| `login` | Interactive Garmin sign-in. **The user runs this themselves** — never type their password |
+| `login` | Interactive Garmin sign-in (email, password, MFA code). **The user runs this themselves**, in their own terminal — never type their password |
 | `sync` | Pull new runs. Run it first in every routine |
 | `today [--date D]` | That day's planned runs, the run matched to each, and a verdict |
 | `week [--date D]` | Monday to Sunday around D: km done vs planned, day by day |
@@ -35,8 +35,16 @@ Verdicts: on target (within 10% of the distance and 5% of the target pace), too
 short, too long, too slow, too fast, missed, to do. A run is matched to a plan
 on the same day only; a run on another day shows as an extra.
 
-If `sync` fails because the login expired or Garmin rate-limits (HTTP 429), say
-so and stop. Don't retry sign-ins: retrying extends the block.
+### First use, and when the login stops working
+
+When `sync` says there is no saved Garmin login, or that it no longer works,
+it prints the exact `login` command for this install. Pass that command on to
+the user as it is, ask them to run it in their own terminal, and wait until
+they say it worked; then run `sync` again. Never run `login` yourself: it asks
+for a password, and it refuses to run outside a terminal anyway.
+
+If a sign-in fails or Garmin rate-limits (HTTP 429), say so and stop. Don't
+retry, and don't suggest retrying soon: repeated attempts extend the block.
 
 ## Athlete notes — the memory between sessions
 
