@@ -29,6 +29,7 @@ rather than the summary.
 | `week [--date D]` | Monday to Sunday around D: km done vs planned, day by day |
 | `plan add D KIND KM [--pace M:SS] [--note TEXT]` | Add a planned run. KIND: easy, long, tempo, intervals, recovery, race, rest |
 | `plan rm ID ...` | Remove planned runs by the IDs `today` and `week` print |
+| `plan move ID D` | Move a planned run to the day it was actually done (swaps, see below) |
 | `notes` | Path and content of the athlete notes (below) |
 
 Verdicts: on target (within 10% of the distance and 5% of the target pace), too
@@ -38,6 +39,22 @@ moved by a day still counts for its plan; that run's own day lists it under
 `counts_for`. A plan is only missed once the day after it has passed too. Runs
 matched to no plan are extras. Weekly km done counts runs by the day they were
 run.
+
+### Swapped sessions — the CLI matches, you judge
+
+The CLI only pairs a plan with a run on its own day or one day either side. It
+can't tell that two sessions were swapped, so look for it in both routines.
+Signs:
+
+- a "too long" or "too short" verdict next to a "missed" plan or an extra run,
+  within a few days;
+- two plans whose distances would fit the runs better the other way round.
+
+When the runs clearly fit the plans swapped, record what happened: `plan move`
+each plan to the day its run was done, say so in one line ("you swapped Monday's
+easy and Tuesday's tempo; I've recorded it that way"), and show `today` or
+`week` again. If it's ambiguous, ask first. Moves only record the past; changes
+to coming days go through the weekly routine.
 
 ### First use, and when the login stops working
 
@@ -76,8 +93,7 @@ is something to put in it.
 
 1. `notes`, `sync`, then `today --json`.
 2. Say in two or three lines: what was planned, what was done, the verdict.
-   The CLI already matches runs moved by a day; use your judgement for what it
-   can't see, such as two sessions swapped or a run split in two.
+   Check for swapped sessions (above) before reporting a verdict.
 3. One observation that matters this week, if any — "that's the second short
    long run", not a lecture. No change to the plan here; that is weekly.
 
@@ -86,7 +102,8 @@ is something to put in it.
 1. `notes`, `sync`, then `week --json` for the week just ending and `week
    --date <next Monday> --json` for the one coming. Place the coming week in
    the season outline: weeks to the next race, and which phase that is.
-2. Summarise the week just ending: km done against planned, verdicts that repeat.
+2. Check the week just ending for swapped sessions (above), then summarise it:
+   km done against planned, verdicts that repeat.
 3. Propose changes to the coming week, with a reason for each. Conservative
    defaults, which the user's own rules override:
    - Don't make up missed distance. Missed sessions are dropped, not stacked.

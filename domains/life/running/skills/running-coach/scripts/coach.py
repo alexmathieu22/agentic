@@ -11,6 +11,7 @@
   coach.py week [--date D]            Monday to Sunday around D: planned vs done
   coach.py plan add D KIND KM [--pace M:SS] [--note TEXT]
   coach.py plan rm ID [ID ...]
+  coach.py plan move ID D             move a planned run to the day it was actually done
   coach.py notes                      where the athlete notes live, and what they say
 
 Every command takes --json. The database and the notes live in RUNNING_COACH_HOME
@@ -140,6 +141,11 @@ def days(conn, lo: date, hi: date, today: date) -> list[dict]:
     return out
 
 
+def move(conn, plan_id: int, day: date) -> bool:
+    """Record that a planned run was done on another day, so it matches that day's run from now on."""
+    return conn.execute("UPDATE plans SET date = ? WHERE id = ?", (day.isoformat(), plan_id)).rowcount == 1
+
+
 def week(conn, day: date, today: date) -> dict:
     monday = day - timedelta(days=day.weekday())
     sunday = monday + timedelta(days=6)
@@ -200,6 +206,9 @@ def main(argv=None):
     add.add_argument("--pace", type=parse_pace, help="target pace as M:SS per km")
     add.add_argument("--note")
     plan.add_parser("rm", parents=[common]).add_argument("ids", type=int, nargs="+")
+    mv = plan.add_parser("move", parents=[common])
+    mv.add_argument("id", type=int)
+    mv.add_argument("date", type=date.fromisoformat)
     a = p.parse_args(argv)
 
     if a.cmd == "login":
@@ -226,6 +235,10 @@ def main(argv=None):
         cur = conn.execute("INSERT INTO plans(date, kind, distance_km, pace_s, note) VALUES (?,?,?,?,?)",
                            (a.date.isoformat(), a.kind, a.km, a.pace, a.note))
         result, text = {"id": cur.lastrowid}, f"Added plan {cur.lastrowid}"
+    elif a.action == "move":
+        if not move(conn, a.id, a.date):
+            sys.exit(f"No plan {a.id}")
+        result, text = {"id": a.id, "date": a.date.isoformat()}, f"Moved plan {a.id} to {a.date}"
     else:
         n = conn.execute(f"DELETE FROM plans WHERE id IN ({','.join('?' * len(a.ids))})", a.ids).rowcount
         result, text = {"removed": n}, f"Removed {n} plans"
