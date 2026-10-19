@@ -37,6 +37,7 @@ domains/
 │   │                          acceptance-criteria
 │   └── delivery/              plan-then-build, incident-response
 └── life/
+    ├── finance/               budget (the shared budget app's CLI)
     ├── notes/                 note-taking (Obsidian house style)
     └── running/               running-coach (Garmin runs vs a training plan)
 ```
