@@ -12,6 +12,8 @@
   coach.py plan add D KIND KM [--pace M:SS] [--note TEXT]
   coach.py plan rm ID [ID ...]
   coach.py plan move ID D             move a planned run to the day it was actually done
+  coach.py runs [--days N]            recent runs
+  coach.py trace [--date D] [--id ID] heart rate and pace per km of a run (--json: full series)
   coach.py notes                      where the athlete notes live, and what they say
 
 Every command takes --json. The database and the notes live in RUNNING_COACH_HOME
@@ -182,6 +184,24 @@ def day_text(d: dict) -> str:
     return "\n".join(lines if len(lines) > 1 else lines + ["  nothing planned or done"])
 
 
+def trace(api, run_id: str) -> list[dict]:
+    """Per-km splits (pace, mean HR) plus the raw [min, km, bpm] series of one Garmin activity."""
+    d = api.get_activity_details(int(run_id.split(":")[1]), maxchart=2000)
+    keys = [m["key"] for m in d["metricDescriptors"]]
+    t, h, x = (keys.index(k) for k in ("sumDuration", "directHeartRate", "sumDistance"))
+    pts = [v for m in d["activityDetailMetrics"] if None not in (v := tuple(m["metrics"][i] for i in (t, h, x)))]
+    km = {}
+    for sec, hr, m in pts:
+        km.setdefault(int(m // 1000), []).append((sec, hr, m))
+    splits = []
+    for k, g in sorted(km.items()):
+        dist, secs = g[-1][2] - g[0][2], g[-1][0] - g[0][0]
+        if dist > 50:  # skip slivers: pace is meaningless
+            splits.append({"km": k + 1, "dist_m": round(dist), "pace_s": secs / dist * 1000,
+                           "avg_hr": round(sum(p[1] for p in g) / len(g))})
+    return {"splits": splits, "series": [[round(a / 60, 2), round(c / 1000, 3), round(b)] for a, b, c in pts]}
+
+
 def parse_pace(s: str) -> float:
     m, sec = s.split(":")
     return int(m) * 60 + int(sec)
@@ -198,6 +218,10 @@ def main(argv=None):
     sub.add_parser("sync", parents=[common]).add_argument("--days", type=int, default=90, help="days to fetch on first sync")
     for name in ("today", "week"):
         sub.add_parser(name, parents=[common]).add_argument("--date", type=date.fromisoformat, default=date.today())
+    sub.add_parser("runs", parents=[common]).add_argument("--days", type=int, default=14)
+    tr = sub.add_parser("trace", parents=[common])
+    tr.add_argument("--date", type=date.fromisoformat, help="latest run of that day (default: latest run)")
+    tr.add_argument("--id", help="run id, as `runs` prints it")
     plan = sub.add_parser("plan").add_subparsers(dest="action", required=True)
     add = plan.add_parser("add", parents=[common])
     add.add_argument("date", type=date.fromisoformat)
@@ -224,6 +248,19 @@ def main(argv=None):
     if a.cmd == "sync":
         result = {"added": sync(conn, garmin(), a.days, today)}
         text = f"{result['added']} new runs synced"
+    elif a.cmd == "runs":
+        rows = conn.execute("SELECT * FROM runs WHERE date >= ? ORDER BY start_time DESC",
+                            ((today - timedelta(days=a.days)).isoformat(),)).fetchall()
+        result = [dict(r) for r in rows]
+        text = "\n".join(f"{r['id']}  {r['start_time'][:16]}  {run_text(r)}" for r in result) or "No runs"
+    elif a.cmd == "trace":
+        q, args = ("id = ?", [a.id]) if a.id else ("date = ?", [a.date.isoformat()]) if a.date else ("1", [])
+        run = conn.execute(f"SELECT * FROM runs WHERE {q} ORDER BY start_time DESC LIMIT 1", args).fetchone()
+        if not run:
+            sys.exit("No matching run (try `runs`)")
+        result = {"run": dict(run), **trace(garmin(), run["id"])}
+        text = "\n".join([f"{run['start_time'][:16]}  {run_text(run)}"]
+                          + [f"km {s['km']:>2}: {pace(s['pace_s'])}  HR {s['avg_hr']}" for s in result["splits"]])
     elif a.cmd == "today":
         result = days(conn, a.date, a.date, today)[0]
         text = day_text(result)
