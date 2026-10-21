@@ -28,6 +28,8 @@ rather than the summary.
 | `sync` | Pull new runs. Run it first in every routine |
 | `today [--date D]` | That day's planned runs, the run matched to each, and a verdict |
 | `week [--date D]` | Monday to Sunday around D: km done vs planned, day by day |
+| `runs [--days N]` | Recent runs with their ids |
+| `trace [--date D] [--id ID]` | Pace and heart rate per km of one run (latest by default). `--json` adds the full `[min, km, bpm]` series, ready to chart. Fetches from Garmin |
 | `plan add D KIND KM [--pace M:SS] [--note TEXT]` | Add a planned run. KIND: easy, long, tempo, intervals, recovery, race, rest |
 | `plan rm ID ...` | Remove planned runs by the IDs `today` and `week` print |
 | `plan move ID D` | Move a planned run to the day it was actually done (swaps, see below) |
