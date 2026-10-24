@@ -1,5 +1,5 @@
-// Today's personal daily note and job recap. Read-only; the vault stays the source of truth.
-import { readFile } from 'node:fs/promises';
+// Links to today's personal daily note and job recap. Read-only; the vault stays the source of truth.
+import { access } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 
@@ -16,10 +16,9 @@ export async function load() {
   ];
   const out = [];
   for (const t of targets) {
-    const raw = await readFile(join(VAULT, t.file), 'utf8').catch(() => null);
-    if (raw === null) continue;
-    const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '').trim();
-    out.push({ label: t.label, context: t.context, path: t.file, body: body.slice(0, 1500),
+    const exists = await access(join(VAULT, t.file)).then(() => true, () => false);
+    if (!exists) continue;
+    out.push({ label: t.label, context: t.context,
       uri: `obsidian://open?vault=${encodeURIComponent(basename(VAULT))}&file=${encodeURIComponent(t.file.replace(/\.md$/, ''))}` });
   }
   return out;
