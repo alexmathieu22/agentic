@@ -50,6 +50,11 @@ createServer(async (req, res) => {
     res.writeHead(200, { 'content-type': 'application/json' }).end(body);
     return;
   }
+  if (path === '/api/running') {
+    const body = await running.detail().then(JSON.stringify, (e) => JSON.stringify({ error: String(e.message) }));
+    res.writeHead(200, { 'content-type': 'application/json' }).end(body);
+    return;
+  }
   const file = normalize(join(PUBLIC, path === '/' ? 'index.html' : path));
   if (!file.startsWith(PUBLIC)) return res.writeHead(403).end();
   const body = await readFile(file).catch(() => null);
