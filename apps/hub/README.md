@@ -8,7 +8,7 @@ node apps/hub/server.mjs        # http://localhost:4173
 node --test apps/hub/today.test.mjs apps/hub/lib.test.mjs apps/hub/vault.test.mjs
 ```
 
-Pages: **Today** (on the job tab, tiles for yesterday's recap and today's, with a "Draft with Claude" button when today's doesn't exist yet; then what needs you, sessions to pick up, glance blocks), **Work** (all activity, or one
+Pages: **Today** (a to-do tile from the vault's `Life/Personal todo.md` or `Job/Job todo.md`, unchecked `- [ ]` items only, with a pen that opens the note in Obsidian; on the job tab, tiles for yesterday's recap and today's, with a "Draft with Claude" button when today's doesn't exist yet; then what needs you, sessions to pick up, glance blocks), **Work** (all activity, or one
 project's ticket board and its sessions), and **Running** / **Budget** in contexts that list those
 panels. ⌘K or `/` searches everything. Each page is a module in `public/pages/`.
 
