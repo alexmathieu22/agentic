@@ -5,7 +5,7 @@ No dependencies, no build step (Node 22).
 
 ```bash
 node apps/hub/server.mjs        # http://localhost:4173
-node --test apps/hub/today.test.mjs
+node --test apps/hub/today.test.mjs apps/hub/lib.test.mjs
 ```
 
 Pages: **Today** (what needs you, sessions to pick up, glance blocks), **Work** (all activity, or one
