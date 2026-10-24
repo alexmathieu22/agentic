@@ -50,6 +50,16 @@ createServer(async (req, res) => {
     res.writeHead(200, { 'content-type': 'application/json' }).end(body);
     return;
   }
+  if (path === '/api/issues') {
+    // Only repos we already know from sessions; the query names a project, never a path.
+    const name = new URL(req.url, 'http://x').searchParams.get('project')?.toLowerCase();
+    const repo = (await sessions.load()).map((s) => s.repo).find((r) => r.split('/').pop().toLowerCase() === name);
+    const body = repo
+      ? await github.issues(repo).then(JSON.stringify, (e) => JSON.stringify({ error: String(e.message).split('\n')[0] }))
+      : JSON.stringify({ error: 'unknown project' });
+    res.writeHead(200, { 'content-type': 'application/json' }).end(body);
+    return;
+  }
   if (path === '/api/running') {
     const body = await running.detail().then(JSON.stringify, (e) => JSON.stringify({ error: String(e.message) }));
     res.writeHead(200, { 'content-type': 'application/json' }).end(body);
