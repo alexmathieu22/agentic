@@ -38,16 +38,19 @@ export function render(m) {
   ].filter(Boolean).join(', ');
   const pills = Object.entries(m.c.sources).map(([k, v]) => `<span class="pill ${v.ok ? 'ok' : 'off'}" title="${esc(v.error ?? '')}">${k}</span>`).join('');
 
+  // Running and budget sit in their own row on top; below it every tab shares one layout.
   return `<h1>Today ${headline}.</h1>
+    ${running || budget ? `<div class="glance">
+      ${running ? block('Running', 'running', running.ok
+        ? `<div class="big">${m.glance.doneKm}<small> / ${m.glance.plannedKm} km</small></div>${spark(m.days)}<small>${esc(m.glance.today.map((t) => `today: ${t.kind} ${t.distance_km} km, ${t.verdict}`).join(' · ') || 'rest day')}</small>`
+        : `<small class="warn">${esc(running.error)}</small>`) : ''}
+      ${budget ? block('Budget', 'budget', budget.ok ? `<pre class="plain">${esc(budget.data.text)}</pre>` : `<small class="warn">${esc(budget.error)}</small>`) : ''}
+    </div>` : ''}
     ${recaps(m)}
     <div class="sum"><div>
       ${section('01', 'Needs you', `<ol class="list">${m.c.attention.map((a) => `<li>${link(a.url, esc(a.text))}<small>${esc(a.project)}</small></li>`).join('') || '<li class="muted">All clear.</li>'}</ol>`)}
       ${section('02', 'Pick up', `<div class="list">${m.sessions.slice(0, 4).map((s) => `<div class="li"><div><b>${esc(s.title)}</b><small>${esc(s.project)} · ${esc(s.branch || '-')} · ${rel(s.updatedAt)}</small></div>${sessionActions(s)}</div>`).join('') || '<p class="muted pad">No sessions yet.</p>'}</div>`, 'work')}
     </div><div class="side">
-      ${running ? block('Running', 'running', running.ok
-        ? `<div class="big">${m.glance.doneKm}<small> / ${m.glance.plannedKm} km</small></div>${spark(m.days)}<small>${esc(m.glance.today.map((t) => `today: ${t.kind} ${t.distance_km} km, ${t.verdict}`).join(' · ') || 'rest day')}</small>`
-        : `<small class="warn">${esc(running.error)}</small>`) : ''}
-      ${budget ? block('Budget', 'budget', budget.ok ? `<pre class="plain">${esc(budget.data.text)}</pre>` : `<small class="warn">${esc(budget.error)}</small>`) : ''}
       ${block('Tickets', 'work', `<div class="big">${m.tickets.length}<small> open</small></div><small>${esc(m.tickets.map((t) => `${t.id} ${t.state}`).join(' · ') || 'none')}</small>`)}
       ${m.c.notes.some((n) => n.exists && n.kind === 'today') ? block('Vault today', '', `<div class="notes">${m.c.notes.filter((n) => n.exists && n.kind === 'today').map((n) => `<a href="${esc(n.uri)}">${esc(n.label)}</a>`).join('')}</div>`) : ''}
       ${block('Sources', '', `<div class="pills">${pills}</div>`)}

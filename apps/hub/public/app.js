@@ -22,7 +22,8 @@ function draw() {
   const date = new Date(state.data.date + 'T12:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   $('page').innerHTML = `<p class="date">${date} · ${esc(c.label)}</p>` + PAGES[page].render(model(state), state, draw);
   $('page').setAttribute('aria-busy', 'false');
-  if (page === 'running' && !state.running) loadRunning();
+  // Today's running tile charts the week too, so load it wherever a running panel is shown.
+  if ((page === 'running' || (page === 'today' && c.panels.some((p) => p.name === 'running'))) && !state.running) loadRunning();
 }
 
 async function loadRunning() {
