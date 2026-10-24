@@ -28,3 +28,9 @@ test('open tasks are the unchecked, non-empty checkboxes with markdown stripped'
   const md = `---\ntype: note\n---\n\n## To do\n\n- [ ] Call the [[People/Anna|Anna]] back\n- [x] Done thing\n- [ ] \n  - [ ] Nested [link](https://x) one\n* [ ] Star bullet\n- not a task`;
   assert.deepEqual(openTasks(md), ['Call the Anna back', 'Nested link one', 'Star bullet']);
 });
+
+test('a checklist inside a code fence is not a task, and CRLF notes parse like LF ones', () => {
+  assert.deepEqual(openTasks('## To do\n\n```\n- [ ] example\n```\n- [ ] real'), ['real']);
+  assert.deepEqual(openTasks('---\r\ntype: note\r\n---\r\n\r\n- [ ] item one\r\n- [x] done\r\n'), ['item one']);
+  assert.deepEqual(highlights('## What I did\r\n\r\n### Rollout\r\n\r\n- Merged it.\r\n').map((h) => h.title), ['Rollout']);
+});

@@ -7,6 +7,10 @@ import { basename, join } from 'node:path';
 
 export const VAULT = process.env.OBSIDIAN_VAULT_PATH ?? join(homedir(), 'Repos', 'obsidian');
 const TZ = 'America/Toronto';
+const TODO_LIMIT = 8; // to-do items shown before "+N more in the note"
+const HIGHLIGHT_LIMIT = 6; // sections shown per recap
+const HIGHLIGHT_CHARS = 120; // length of a highlight's detail line
+const LOOKBACK_DAYS = 14; // how far back to look for the latest earlier recap
 
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); // YYYY-MM-DD
 const addDays = (d, n) => new Date(Date.parse(`${d}T12:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
@@ -23,15 +27,25 @@ const plain = (s) => s
   .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1') // [[note|text]] -> text
   .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // [text](url) -> text
   .replace(/`|\*\*/g, ''); // inline code and bold marks; a lone * (a11y/*) stays
-const firstSentence = (s, max = 120) => {
+const firstSentence = (s, max = HIGHLIGHT_CHARS) => {
   const t = plain(s).trim().split(/(?<=[.;])\s/)[0].replace(/[.;]$/, '');
   return t.length > max ? `${t.slice(0, max - 1)}…` : t;
 };
 
+// A note's lines without its frontmatter or fenced code, so an example checklist pasted in a code
+// block is not a task, and a CRLF note parses like an LF one.
+function contentLines(md) {
+  let fenced = false;
+  return md.replace(/\r\n/g, '\n').replace(/^---\n[\s\S]*?\n---\n/, '').split('\n').filter((l) => {
+    if (/^\s*(```|~~~)/.test(l)) { fenced = !fenced; return false; }
+    return !fenced;
+  });
+}
+
 // The main points of a note's "## What I did" section: each "### " heading with the first sentence of its
 // first bullet, or, in a note without headings, its top-level bullets.
-export function highlights(md, max = 6) {
-  const lines = md.replace(/^---\n[\s\S]*?\n---\n/, '').split('\n');
+export function highlights(md, max = HIGHLIGHT_LIMIT) {
+  const lines = contentLines(md);
   const start = lines.findIndex((l) => /^## What I did\b/.test(l));
   if (start < 0) return [];
   const end = lines.findIndex((l, i) => i > start && /^## /.test(l));
@@ -49,7 +63,7 @@ export function highlights(md, max = 6) {
 
 // Unchecked tasks ("- [ ] text") of a note, in order. Empty checkboxes are skipped.
 export function openTasks(md) {
-  return md.replace(/^---\n[\s\S]*?\n---\n/, '').split('\n')
+  return contentLines(md)
     .flatMap((l) => { const m = l.match(/^\s*[-*] \[ \] (\S.*)$/); return m ? [plain(m[1]).trim()] : []; });
 }
 
@@ -71,7 +85,9 @@ export async function load() {
   const read = (src, date) => readFile(join(VAULT, src.file(date)), 'utf8').catch(() => null);
   const entry = (src, date, kind, raw) => ({
     label: src.label, context: src.context, recap: !!src.recap, kind, date, weekday: weekday(date),
-    yesterday: date === addDays(d, -1), exists: raw !== null, highlights: raw === null ? [] : highlights(raw),
+    yesterday: date === addDays(d, -1), exists: raw !== null,
+    // Only recaps show highlights; the personal daily note stays a link, so none of its text leaves the vault.
+    highlights: src.recap && raw !== null ? highlights(raw) : [],
     uri: noteUri(src.file(date)),
     draftUrl: src.recap && kind === 'today' && raw === null
       ? `claude://code/new?folder=${encodeURIComponent(VAULT)}&q=${encodeURIComponent(draftPrompt(date))}` : undefined,
@@ -81,7 +97,7 @@ export async function load() {
     const todoRaw = await readFile(join(VAULT, src.todo), 'utf8').catch(() => null);
     const tasks = todoRaw === null ? [] : openTasks(todoRaw);
     out.push({
-      label: 'To do', context: src.context, kind: 'todo', exists: todoRaw !== null, items: tasks.slice(0, 8), total: tasks.length,
+      label: 'To do', context: src.context, kind: 'todo', exists: todoRaw !== null, items: tasks.slice(0, TODO_LIMIT), total: tasks.length,
       uri: noteUri(src.todo),
       // A missing note is created through Obsidian itself, so this server never writes to the vault.
       createUrl: todoRaw === null
@@ -91,7 +107,7 @@ export async function load() {
     out.push(entry(src, d, 'today', await read(src, d)));
     if (!src.recap) continue;
     // Yesterday, or the latest recap before it (a weekend or day off has none).
-    for (let i = 1; i <= 14; i++) {
+    for (let i = 1; i <= LOOKBACK_DAYS; i++) {
       const raw = await read(src, addDays(d, -i));
       if (raw !== null) { out.push(entry(src, addDays(d, -i), 'previous', raw)); break; }
     }
