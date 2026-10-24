@@ -7,23 +7,20 @@
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<main>
-  <header>
-    <div>
-      <p class="eyebrow" id="date"></p>
-      <h1 id="greeting">Today</h1>
-    </div>
-    <button id="refresh" title="Refresh">Refresh</button>
-  </header>
-  <nav id="tabs" class="tabs"></nav>
-  <div id="status" class="status"></div>
-  <section id="panels"></section>
-  <section id="attention"></section>
-  <div class="cols">
-    <section id="projects"></section>
-    <aside id="notes"></aside>
+<nav class="top">
+  <b class="logo">hub<span>.</span></b>
+  <div class="ctx" id="ctx"></div>
+  <div class="pages" id="pages"></div>
+  <button class="k" data-palette>⌘K search</button>
+  <button class="k" id="theme" title="Toggle light/dark"></button>
+</nav>
+<main id="page"><p class="muted">Loading…</p></main>
+<div id="pal" hidden>
+  <div class="box">
+    <input id="q" autocomplete="off" placeholder="Search sessions, tickets, pages…   ↑↓ ↵   esc to close">
+    <div id="res"></div>
   </div>
-</main>
+</div>
 <script src="/app.js" type="module"></script>
 </body>
 </html>
