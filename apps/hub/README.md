@@ -38,6 +38,6 @@ sessions fall into the first context. On the job computer, list `job` first:
 ```json
 {
   "job": { "label": "Job", "sources": ["jira", "gitlab"] },
-  "personal": { "label": "Personal", "sources": ["linear"], "panels": ["running", "budget"] }
+  "personal": { "label": "Personal", "sources": ["linear", "github"], "panels": ["running", "budget"] }
 }
 ```
