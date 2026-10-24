@@ -8,6 +8,23 @@ const spark = (days) => {
 };
 
 // Only blocks that lead somewhere are links; a link can't hold the vault block's own links.
+// Yesterday's (or the latest earlier) recap and today's, for contexts with a daily recap note.
+const highlightList = (hs) => `<ul class="hl">${hs.map((h) => `<li><b>${esc(h.title)}</b>${h.detail ? `<small>${esc(h.detail)}</small>` : ''}</li>`).join('')}</ul>`;
+const noteLink = (n) => `<a class="more" href="${esc(n.uri)}">open note →</a>`;
+function recaps(m) {
+  const now = m.c.notes.find((n) => n.recap && n.kind === 'today');
+  if (!now) return '';
+  const prev = m.c.notes.find((n) => n.recap && n.kind === 'previous');
+  const prevTile = prev
+    ? `<div class="blk"><h3>${prev.yesterday ? 'What I did yesterday' : `Last recap · ${prev.weekday}`}${noteLink(prev)}</h3>${
+      prev.highlights.length ? highlightList(prev.highlights) : '<small>That note has no "What I did" yet.</small>'}</div>`
+    : `<div class="blk"><h3>What I did yesterday</h3><small>No recap in the last two weeks.</small></div>`;
+  const nowTile = `<div class="blk"><h3>What I did today${now.exists ? noteLink(now) : ''}</h3>${now.exists
+    ? (now.highlights.length ? highlightList(now.highlights) : '<small>Today\'s note has no "What I did" yet.</small>')
+    : `<small>No recap yet today.</small><a class="btn" href="${esc(now.draftUrl)}" title="Opens Claude Desktop in your vault with a prepared prompt; you review the draft before it is written">Draft with Claude</a>`}</div>`;
+  return `<div class="recaps">${prevTile}${nowTile}</div>`;
+}
+
 const block = (title, href, body) => href
   ? `<a class="blk" href="#${href}"><h3>${title}<span>→</span></h3>${body}</a>`
   : `<div class="blk"><h3>${title}</h3>${body}</div>`;
@@ -22,6 +39,7 @@ export function render(m) {
   const pills = Object.entries(m.c.sources).map(([k, v]) => `<span class="pill ${v.ok ? 'ok' : 'off'}" title="${esc(v.error ?? '')}">${k}</span>`).join('');
 
   return `<h1>Today ${headline}.</h1>
+    ${recaps(m)}
     <div class="sum"><div>
       ${section('01', 'Needs you', `<ol class="list">${m.c.attention.map((a) => `<li>${link(a.url, esc(a.text))}<small>${esc(a.project)}</small></li>`).join('') || '<li class="muted">All clear.</li>'}</ol>`)}
       ${section('02', 'Pick up', `<div class="list">${m.sessions.slice(0, 4).map((s) => `<div class="li"><div><b>${esc(s.title)}</b><small>${esc(s.project)} · ${esc(s.branch || '-')} · ${rel(s.updatedAt)}</small></div>${sessionActions(s)}</div>`).join('') || '<p class="muted pad">No sessions yet.</p>'}</div>`, 'work')}
@@ -31,7 +49,7 @@ export function render(m) {
         : `<small class="warn">${esc(running.error)}</small>`) : ''}
       ${budget ? block('Budget', 'budget', budget.ok ? `<pre class="plain">${esc(budget.data.text)}</pre>` : `<small class="warn">${esc(budget.error)}</small>`) : ''}
       ${block('Tickets', 'work', `<div class="big">${m.tickets.length}<small> open</small></div><small>${esc(m.tickets.map((t) => `${t.id} ${t.state}`).join(' · ') || 'none')}</small>`)}
-      ${m.c.notes.length ? block('Vault today', '', `<div class="notes">${m.c.notes.map((n) => `<a href="${esc(n.uri)}">${esc(n.label)}</a>`).join('')}</div>`) : ''}
+      ${m.c.notes.some((n) => n.exists && n.kind === 'today') ? block('Vault today', '', `<div class="notes">${m.c.notes.filter((n) => n.exists && n.kind === 'today').map((n) => `<a href="${esc(n.uri)}">${esc(n.label)}</a>`).join('')}</div>`) : ''}
       ${block('Sources', '', `<div class="pills">${pills}</div>`)}
     </div></div>`;
 }
