@@ -41,3 +41,11 @@ sessions fall into the first context. On the job computer, list `job` first:
   "personal": { "label": "Personal", "sources": ["linear", "github"], "panels": ["running", "budget"] }
 }
 ```
+
+A context can name each project's tracker, keyed by repo name in lower case, so a project with no
+open tickets still shows the right board. Without it, a project with Linear tickets uses Linear and
+the rest use their GitHub issues:
+
+```json
+"personal": { "label": "Personal", "sources": ["linear", "github"], "trackers": { "kinovember": "linear" } }
+```

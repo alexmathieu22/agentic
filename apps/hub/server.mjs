@@ -36,6 +36,7 @@ async function today() {
     const mine = (items) => items.filter((x) => contextOf(contexts, x) === key);
     out[key] = {
       label: c.label,
+      trackers: c.trackers ?? {},
       // Sources with no connector yet (jira, gitlab) still get a pill, honestly marked.
       sources: Object.fromEntries(['sessions', ...(c.sources ?? []), 'vault'].map((n) => [n, status[n] ?? { ok: false, error: 'no connector yet' }])),
       notes: v.data.filter((n) => n.context === key),
