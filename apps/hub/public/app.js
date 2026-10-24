@@ -21,6 +21,7 @@ function draw() {
   $('pages').innerHTML = pages.map((p) => `<a href="#${p}" class="${p === page ? 'on' : ''}">${p}</a>`).join('');
   const date = new Date(state.data.date + 'T12:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   $('page').innerHTML = `<p class="date">${date} · ${esc(c.label)}</p>` + PAGES[page].render(model(state), state, draw);
+  $('page').setAttribute('aria-busy', 'false');
   if (page === 'running' && !state.running) loadRunning();
 }
 
@@ -31,9 +32,7 @@ async function loadRunning() {
 }
 
 // Theme: follows the OS until toggled, then remembered.
-let theme;
-try { theme = localStorage.getItem('hub-theme'); } catch {}
-theme ??= matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+let theme = document.documentElement.dataset.theme; // set before first paint by index.html
 const applyTheme = () => {
   document.documentElement.dataset.theme = theme;
   $('theme').textContent = theme === 'dark' ? '☀︎ Light' : '☾ Dark';
@@ -108,6 +107,8 @@ document.addEventListener('click', (e) => {
 });
 addEventListener('hashchange', () => state.data && draw());
 
+// Before data: the skeleton of the page being opened, so it doesn't turn into a different layout.
+$('page').innerHTML = (PAGES[location.hash.slice(1)] ?? today).skeletonView();
 state.data = await (await fetch('/api/today')).json();
 if (state.data.error) {
   $('page').innerHTML = `<p class="warn">${esc(state.data.error)}</p>`;

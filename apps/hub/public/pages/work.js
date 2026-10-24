@@ -1,4 +1,9 @@
-import { esc, rel, section, feed, sessionActions } from '../lib.js';
+import { esc, rel, section, feed, sessionActions, skeleton } from '../lib.js';
+
+const boardSkeleton = (cols) => cols.map((c, i) => `<div class="col"><h3>${esc(c)}</h3>${skeleton.box('sk-card').repeat(Math.max(1, 3 - i))}</div>`).join('');
+export const skeletonView = () => `${skeleton.line('180px')}
+  <div class="pick">${'<div class="sk sk-pill"></div>'.repeat(5)}</div><div class="sk sk-h1"></div>
+  ${section('', 'Activity', `<div class="panel">${skeleton.line('30%')}${skeleton.line().repeat(6)}</div>`)}`;
 
 // Work = AI sessions plus the tickets they serve. "All" is the cross-project activity feed; a project shows
 // its board and its own activity. A project's tracker is Linear when Linear has tickets for it, Jira on the
@@ -55,15 +60,14 @@ export function render(m, state, redraw) {
       <div class="tk-f">${start(t)}${l.sessions.length > 3 ? `<small>+${l.sessions.length - 3} more sessions</small>` : ''}</div></div>`;
   };
 
-  const note = loaded?.loading ? '<p class="muted">Loading issues…</p>'
-    : loaded?.error ? `<p class="warn">Couldn't load issues: ${esc(loaded.error)}</p>`
+  const note = loaded?.error ? `<p class="warn">Couldn't load issues: ${esc(loaded.error)}</p>`
     : m.c.sources[cur.tracker.toLowerCase()]?.ok === false ? `<p class="muted">${cur.tracker} isn't connected yet.</p>` : '';
   const noun = cur.tracker === 'GitHub' ? 'issue' : 'ticket';
   const cols = [...new Set(['Todo', ...tickets.map(column), 'In Progress', 'In Review'])];
   const projTickets = m.tickets.filter((t) => t.project === cur.name);
   return `${picker(cur.name)}
-    <h1>${esc(cur.name)}: <mark>${tickets.length}</mark> open ${noun}${tickets.length === 1 ? '' : 's'} in ${cur.tracker}${loaded?.slug ? ` <small class="muted">${esc(loaded.slug)}</small>` : ''}.</h1>${note}
-    <div class="board">${cols.map((c) => {
+    <h1>${esc(cur.name)}: <mark>${loaded?.loading ? '…' : tickets.length}</mark> open ${noun}${tickets.length === 1 ? '' : 's'} in ${cur.tracker}${loaded?.slug ? ` <small class="muted">${esc(loaded.slug)}</small>` : ''}.</h1>${note}
+    <div class="board">${loaded?.loading ? boardSkeleton(cols) : cols.map((c) => {
       const ts = tickets.filter((t) => column(t) === c);
       return `<div class="col"><h3>${esc(c)} <span>${ts.length}</span></h3>${ts.map(card).join('') || '<p class="muted">—</p>'}</div>`;
     }).join('')}</div>

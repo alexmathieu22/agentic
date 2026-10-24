@@ -1,4 +1,4 @@
-import { esc, pace, section, feed } from '../lib.js';
+import { esc, pace, section, feed, skeleton } from '../lib.js';
 
 const weekChart = (days, w = 640, h = 150) => {
   const max = Math.max(1, ...days.flatMap((d) => [d.plan, d.done])), bw = w / Math.max(days.length, 1);
@@ -17,11 +17,17 @@ const weekly = (runs) => Object.entries(runs.reduce((acc, r) => {
   return acc;
 }, {})).sort();
 
+const body = () => `<div class="stats">${`<div>${skeleton.line('50%')}${skeleton.line('80%')}</div>`.repeat(4)}</div>
+  ${section('01', 'This week, plan vs done', skeleton.box('sk-chart'))}
+  ${section('02', 'Weekly volume', `<div class="panel">${skeleton.line().repeat(4)}</div>`)}`;
+export const skeletonView = () => skeleton.head() + body();
+
 export function render(m, state) {
   const p = m.panel('running');
   if (!p.ok) return `<h1>Running</h1><p class="warn">${esc(p.error)}</p>`;
   if (state.running?.error) return `<h1>Running</h1><p class="warn">${esc(state.running.error)}</p>`;
-  if (!state.running || state.running.loading) return `<h1>Running: <mark>${m.glance.doneKm} of ${m.glance.plannedKm} km</mark> this week.</h1><p class="muted">Loading the week…</p>`;
+  // The headline is known from the summary already; only the week's detail is still loading.
+  if (!state.running || state.running.loading) return `<h1>Running: <mark>${m.glance.doneKm} of ${m.glance.plannedKm} km</mark> this week.</h1>${body()}`;
   const last = m.runs[0];
   const vols = weekly(m.runs), top = Math.max(1, ...vols.map(([, v]) => v));
   return `<h1>Running: <mark>${m.glance.doneKm} of ${m.glance.plannedKm} km</mark> this week.</h1>

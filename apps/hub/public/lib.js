@@ -19,6 +19,14 @@ export const openInClaude = (s) => s.desktopId
   : `<a class="open" href="claude://code/new?folder=${encodeURIComponent(s.repo)}" title="Not a Desktop session; starts a new one in ${esc(s.repo)}">New in Claude</a>`;
 export const sessionActions = (s) => `<span class="acts">${openInClaude(s)}</span>`;
 
+// Grey placeholders while a page waits on data; shaped like what will land there.
+export const skeleton = {
+  line: (w = '100%') => `<div class="sk sk-line" style="width:${w}"></div>`,
+  box: (cls) => `<div class="sk ${cls}"></div>`,
+  head: () => `<div class="sk sk-line" style="width:180px"></div><div class="sk sk-h1"></div>`,
+  rows: (n) => `<div class="list">${'<div class="sk-row"><div class="sk sk-line"></div></div>'.repeat(n)}</div>`,
+};
+
 export const section = (n, title, body, more) =>
   `<section><header><span class="n">${n}</span><h2>${title}</h2>${more ? `<a class="more" href="#${more}">open ${more} →</a>` : ''}</header>${body}</section>`;
 
