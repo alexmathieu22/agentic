@@ -62,7 +62,8 @@ export function model(state) {
   return {
     c, sessions, prs: flat('prs'), tickets: flat('tickets'), panel, glance, runs, days,
     noPr: sessions.filter((s) => recent(s) && !s.prUrl && s.branch && !['main', 'master', 'HEAD'].includes(s.branch)).length,
-    behind: Math.max(0, glance.plannedKm - glance.doneKm),
+    // Km come from summed floats: 10.2 - 6.8 would print as 3.3999999999999995.
+    behind: Math.round(Math.max(0, glance.plannedKm - glance.doneKm) * 10) / 10,
   };
 }
 
