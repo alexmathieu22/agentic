@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { highlights } from './sources/vault.mjs';
+import { highlights, openTasks } from './sources/vault.mjs';
 
 const note = (body) => `---\ntype: daily\n---\n\nUp: [[Job]]\n\n## Notes\n\n- [[Job/Ideas/X|X]] - filed.\n\n## What I did\n\n${body}`;
 
@@ -22,4 +22,9 @@ test('an empty or missing section yields nothing, and long details are cut', () 
   assert.deepEqual(highlights('no sections here'), []);
   const long = highlights(note(`### T\n\n- ${'word '.repeat(60)}`))[0].detail;
   assert.ok(long.length <= 120 && long.endsWith('…'));
+});
+
+test('open tasks are the unchecked, non-empty checkboxes with markdown stripped', () => {
+  const md = `---\ntype: note\n---\n\n## To do\n\n- [ ] Call the [[People/Anna|Anna]] back\n- [x] Done thing\n- [ ] \n  - [ ] Nested [link](https://x) one\n* [ ] Star bullet\n- not a task`;
+  assert.deepEqual(openTasks(md), ['Call the Anna back', 'Nested link one', 'Star bullet']);
 });

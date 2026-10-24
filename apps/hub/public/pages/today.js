@@ -25,6 +25,19 @@ function recaps(m) {
   return `<div class="recaps">${prevTile}${nowTile}</div>`;
 }
 
+// The to-do note is edited by hand in Obsidian, so the tile only reads it and links to the note.
+function todo(m) {
+  const t = m.c.notes.find((n) => n.kind === 'todo');
+  if (!t) return '';
+  const pen = t.exists ? `<a class="pen" href="${esc(t.uri)}" title="Edit this list in Obsidian" aria-label="Edit to-do note">✎</a>` : '';
+  const body = !t.exists
+    ? `<small>No to-do note yet.</small><a class="btn" href="${esc(t.createUrl)}">Create it in Obsidian</a>`
+    : t.items.length
+      ? `<ul class="todo">${t.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>${t.total > t.items.length ? `<small>+${t.total - t.items.length} more in the note</small>` : ''}`
+      : '<small>Nothing on your list.</small>';
+  return `<div class="blk"><h3>To do ${pen}</h3>${body}</div>`;
+}
+
 const block = (title, href, body) => href
   ? `<a class="blk" href="#${href}"><h3>${title}<span>→</span></h3>${body}</a>`
   : `<div class="blk"><h3>${title}</h3>${body}</div>`;
@@ -51,6 +64,7 @@ export function render(m) {
       ${section('01', 'Needs you', `<ol class="list">${m.c.attention.map((a) => `<li>${link(a.url, esc(a.text))}<small>${esc(a.project)}</small></li>`).join('') || '<li class="muted">All clear.</li>'}</ol>`)}
       ${section('02', 'Pick up', `<div class="list">${m.sessions.slice(0, 4).map((s) => `<div class="li"><div><b>${esc(s.title)}</b><small>${esc(s.project)} · ${esc(s.branch || '-')} · ${rel(s.updatedAt)}</small></div>${sessionActions(s)}</div>`).join('') || '<p class="muted pad">No sessions yet.</p>'}</div>`, 'work')}
     </div><div class="side">
+      ${todo(m)}
       ${block('Tickets', 'work', `<div class="big">${m.tickets.length}<small> open</small></div><small>${esc(m.tickets.map((t) => `${t.id} ${t.state}`).join(' · ') || 'none')}</small>`)}
       ${m.c.notes.some((n) => n.exists && n.kind === 'today') ? block('Vault today', '', `<div class="notes">${m.c.notes.filter((n) => n.exists && n.kind === 'today').map((n) => `<a href="${esc(n.uri)}">${esc(n.label)}</a>`).join('')}</div>`) : ''}
       ${block('Sources', '', `<div class="pills">${pills}</div>`)}

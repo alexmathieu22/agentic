@@ -75,6 +75,14 @@ a.blk[href]:hover { border-color: var(--acc); }
 .pill.off { color: var(--warn); }
 .pill.off::before { content: "○ "; }
 
+/* to-do tile */
+.blk h3 .pen { margin-left: auto; font-size: 15px; text-decoration: none; color: var(--muted); letter-spacing: 0; }
+.blk h3 .pen:hover { color: var(--acc); }
+.todo { list-style: none; margin: 6px 0 0; padding: 0; }
+.todo li { position: relative; padding: 4px 0 4px 22px; }
+.todo li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 11px; height: 11px; border: 1.5px solid var(--muted); border-radius: 3px; }
+.blk .btn { display: inline-block; margin-top: 8px; }
+
 /* glance row: running and budget, personal only */
 .glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 0 0 26px; }
 

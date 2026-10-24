@@ -1,5 +1,6 @@
-// Today's and the latest earlier daily notes: a link, plus highlights of what each says I did.
-// Read-only; the vault stays the source of truth, and only the highlights cross the API, never the note.
+// Today's and the latest earlier daily notes (a link plus highlights of what each says I did) and each
+// context's to-do note (its unchecked items). Read-only; the vault stays the source of truth, and only
+// those highlights and items cross the API, never a whole note.
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
@@ -12,9 +13,10 @@ const addDays = (d, n) => new Date(Date.parse(`${d}T12:00:00Z`) + n * 864e5).toI
 const weekday = (d) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
 
 // `recap` sources get a "what I did" tile: yesterday's (or the latest earlier) note and today's.
+// `todo` is the note the user edits by hand; `up` is the area hub a new one links to.
 const SOURCES = [
-  { label: 'Daily note', context: 'personal', file: (d) => `Daily/${d}.md` },
-  { label: 'Job recap', context: 'job', recap: true, file: (d) => `Job/Daily recaps/${d.slice(0, 4)}/${d}.md` },
+  { label: 'Daily note', context: 'personal', file: (d) => `Daily/${d}.md`, todo: 'Life/Personal todo.md', up: 'Life' },
+  { label: 'Job recap', context: 'job', recap: true, file: (d) => `Job/Daily recaps/${d.slice(0, 4)}/${d}.md`, todo: 'Job/Job todo.md', up: 'Job' },
 ];
 
 const plain = (s) => s
@@ -45,6 +47,12 @@ export function highlights(md, max = 6) {
   return out.slice(0, max);
 }
 
+// Unchecked tasks ("- [ ] text") of a note, in order. Empty checkboxes are skipped.
+export function openTasks(md) {
+  return md.replace(/^---\n[\s\S]*?\n---\n/, '').split('\n')
+    .flatMap((l) => { const m = l.match(/^\s*[-*] \[ \] (\S.*)$/); return m ? [plain(m[1]).trim()] : []; });
+}
+
 // What to hand Claude when a recap doesn't exist yet. It opens in the vault, so the vault's own
 // Agent Instructions apply; the draft is shown before anything is written.
 const draftPrompt = (date) => `Write my job daily recap for ${date}.
@@ -59,16 +67,27 @@ Separate completed work from plans, investigations and unverified outcomes, and 
 
 export async function load() {
   const d = today();
+  const noteUri = (file) => `obsidian://open?vault=${encodeURIComponent(basename(VAULT))}&file=${encodeURIComponent(file.replace(/\.md$/, ''))}`;
   const read = (src, date) => readFile(join(VAULT, src.file(date)), 'utf8').catch(() => null);
   const entry = (src, date, kind, raw) => ({
     label: src.label, context: src.context, recap: !!src.recap, kind, date, weekday: weekday(date),
     yesterday: date === addDays(d, -1), exists: raw !== null, highlights: raw === null ? [] : highlights(raw),
-    uri: `obsidian://open?vault=${encodeURIComponent(basename(VAULT))}&file=${encodeURIComponent(src.file(date).replace(/\.md$/, ''))}`,
+    uri: noteUri(src.file(date)),
     draftUrl: src.recap && kind === 'today' && raw === null
       ? `claude://code/new?folder=${encodeURIComponent(VAULT)}&q=${encodeURIComponent(draftPrompt(date))}` : undefined,
   });
   const out = [];
   for (const src of SOURCES) {
+    const todoRaw = await readFile(join(VAULT, src.todo), 'utf8').catch(() => null);
+    const tasks = todoRaw === null ? [] : openTasks(todoRaw);
+    out.push({
+      label: 'To do', context: src.context, kind: 'todo', exists: todoRaw !== null, items: tasks.slice(0, 8), total: tasks.length,
+      uri: noteUri(src.todo),
+      // A missing note is created through Obsidian itself, so this server never writes to the vault.
+      createUrl: todoRaw === null
+        ? `obsidian://new?vault=${encodeURIComponent(basename(VAULT))}&file=${encodeURIComponent(src.todo.replace(/\.md$/, ''))}&content=${encodeURIComponent(`---\ntype: note\ncreated: ${d}\ntags: [todo]\n---\n\nUp: [[${src.up}]]\n\n## To do\n\n- [ ] \n`)}`
+        : undefined,
+    });
     out.push(entry(src, d, 'today', await read(src, d)));
     if (!src.recap) continue;
     // Yesterday, or the latest recap before it (a weekend or day off has none).
