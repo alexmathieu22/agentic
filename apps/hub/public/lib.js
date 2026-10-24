@@ -13,6 +13,15 @@ export const pace = (r) => {
 // A request that fails anywhere (network, server down, bad JSON) becomes { error } so no page waits forever.
 export const getJSON = (url) => fetch(url).then((r) => r.json()).catch((e) => ({ error: e.message }));
 
+// Whether text refers to a ticket. Ids match as whole tokens, so #1 never matches #12 and NOV-1 never
+// matches NOV-14; a GitHub issue also counts as "12" between separators in a branch (fix/12-title).
+export function mentionsTicket(id, text = '') {
+  const lower = text.toLowerCase();
+  const pattern = id.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (new RegExp(`(^|[^a-z0-9])${pattern}(?![0-9])`).test(lower)) return true;
+  return id.startsWith('#') && new RegExp(`(^|[/_-])${id.slice(1)}([/_-]|$)`).test(lower);
+}
+
 export const link = (url, html) => (url ? `<a href="${esc(url)}" target="_blank" rel="noreferrer">${html}</a>` : html);
 
 // claude://code/continue?session=local_… reopens that exact Desktop session. It's undocumented (read from the

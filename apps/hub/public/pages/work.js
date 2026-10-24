@@ -1,4 +1,4 @@
-import { esc, rel, section, feed, sessionActions, skeleton, getJSON } from '../lib.js';
+import { esc, rel, section, feed, sessionActions, skeleton, getJSON, mentionsTicket } from '../lib.js';
 
 const TRACKERS = { linear: 'Linear', github: 'GitHub', jira: 'Jira' };
 const boardSkeleton = (cols) => cols.map((c, i) => `<div class="col"><h3>${esc(c)}</h3>${skeleton.box('sk-card').repeat(Math.max(1, 3 - i))}</div>`).join('');
@@ -36,15 +36,9 @@ export function render(m, state, redraw) {
 
   const projSessions = m.sessions.filter((s) => s.project === cur.name);
   const projPrs = m.prs.filter((p) => p.project === cur.name);
-  // Linear ids (NOV-14) appear in branches and titles; GitHub issues show up as "#12" or as "12" between separators in a branch.
-  const mentions = (t, text = '') => {
-    const lower = text.toLowerCase();
-    if (!t.id.startsWith('#')) return lower.includes(t.id.toLowerCase());
-    return lower.includes(t.id) || new RegExp(`(^|[/_-])${t.id.slice(1)}([/_-]|$)`).test(lower);
-  };
   const linked = (t) => ({
-    sessions: projSessions.filter((s) => mentions(t, s.branch) || mentions(t, s.title)),
-    prs: projPrs.filter((p) => mentions(t, p.title)),
+    sessions: projSessions.filter((s) => mentionsTicket(t.id, s.branch) || mentionsTicket(t.id, s.title)),
+    prs: projPrs.filter((p) => mentionsTicket(t.id, p.title)),
   });
   // GitHub issues have no workflow states, so their column comes from the work already linked to them.
   const column = (t) => t.state ?? (linked(t).prs.length ? 'In Review' : linked(t).sessions.length ? 'In Progress' : 'Todo');
