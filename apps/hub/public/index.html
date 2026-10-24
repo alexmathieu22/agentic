@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hub</title>
 <link rel="stylesheet" href="/style.css">
+<script>
+  // Set the theme before first paint so dark mode never flashes light while data loads.
+  try { document.documentElement.dataset.theme = localStorage.getItem('hub-theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  catch { document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+</script>
 </head>
 <body>
 <nav class="top">
@@ -14,7 +19,7 @@
   <button class="k" data-palette>⌘K search</button>
   <button class="k" id="theme" title="Toggle light/dark"></button>
 </nav>
-<main id="page"><p class="muted">Loading…</p></main>
+<main id="page" aria-busy="true"></main>
 <div id="pal" hidden>
   <div class="box">
     <input id="q" autocomplete="off" placeholder="Search sessions, tickets, pages…   ↑↓ ↵   esc to close">

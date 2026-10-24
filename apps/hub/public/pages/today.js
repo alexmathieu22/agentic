@@ -1,4 +1,4 @@
-import { esc, rel, link, section, sessionActions } from '../lib.js';
+import { esc, rel, link, section, sessionActions, skeleton } from '../lib.js';
 
 const spark = (days) => {
   const max = Math.max(1, ...days.flatMap((d) => [d.plan, d.done]));
@@ -35,3 +35,9 @@ export function render(m) {
       ${block('Sources', '', `<div class="pills">${pills}</div>`)}
     </div></div>`;
 }
+
+export const skeletonView = () => `${skeleton.head()}
+  <div class="sum"><div>
+    ${skeleton.line('90px')}${skeleton.rows(3)}
+    <div style="height:20px"></div>${skeleton.line('90px')}${skeleton.rows(2)}
+  </div><div class="side">${skeleton.box('sk-box').repeat(3)}</div></div>`;
