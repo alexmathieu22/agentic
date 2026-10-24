@@ -1,5 +1,6 @@
 import { esc, rel, section, feed, sessionActions, skeleton, getJSON } from '../lib.js';
 
+const TRACKERS = { linear: 'Linear', github: 'GitHub', jira: 'Jira' };
 const boardSkeleton = (cols) => cols.map((c, i) => `<div class="col"><h3>${esc(c)}</h3>${skeleton.box('sk-card').repeat(Math.max(1, 3 - i))}</div>`).join('');
 export const skeletonView = () => `${skeleton.line('180px')}
   <div class="pick">${'<div class="sk sk-pill"></div>'.repeat(5)}</div><div class="sk sk-h1"></div>
@@ -10,8 +11,10 @@ export const skeletonView = () => `${skeleton.line('180px')}
 // job side, else the repo's GitHub issues (loaded on demand).
 export function render(m, state, redraw) {
   const job = state.ctx === 'job';
+  // A project's tracker as configured (hub.json "trackers"), else guessed: Linear tickets mean Linear.
+  const trackerOf = (p) => TRACKERS[m.c.trackers[p.name.toLowerCase()]] ?? (job ? 'Jira' : p.tickets.length ? 'Linear' : 'GitHub');
   const projects = m.c.projects.filter((p) => p.sessions.length || p.tickets.length)
-    .map((p) => ({ name: p.name, repo: p.sessions[0]?.repo, tracker: job ? 'Jira' : p.tickets.length ? 'Linear' : 'GitHub' }));
+    .map((p) => ({ name: p.name, repo: p.sessions[0]?.repo, tracker: trackerOf(p) }));
   const picker = (current) => `<div class="pick"><button data-work="All" class="${current === 'All' ? 'on' : ''}">All</button>${projects.map((p) =>
     `<button data-work="${esc(p.name)}" class="${p.name === current ? 'on' : ''}">${esc(p.name)}<small>${p.tracker}</small></button>`).join('')}</div>`;
   if (!projects.length || state.work === 'All' || !state.work) {
