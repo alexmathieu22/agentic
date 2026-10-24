@@ -7,8 +7,8 @@ const spark = (days) => {
      <rect x="${i * 20 + 2}" y="${40 - (d.done / max) * 40}" width="14" height="${(d.done / max) * 40}" rx="3" class="done"/>`).join('')}</svg>`;
 };
 
-// Only blocks that lead somewhere are links; a link can't hold the vault block's own links.
 // Yesterday's (or the latest earlier) recap and today's, for contexts with a daily recap note.
+const shortDate = (d) => new Date(`${d}T12:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 const highlightList = (hs) => `<ul class="hl">${hs.map((h) => `<li><b>${esc(h.title)}</b>${h.detail ? `<small>${esc(h.detail)}</small>` : ''}</li>`).join('')}</ul>`;
 const noteLink = (n) => `<a class="more" href="${esc(n.uri)}">open note →</a>`;
 function recaps(m) {
@@ -16,7 +16,7 @@ function recaps(m) {
   if (!now) return '';
   const prev = m.c.notes.find((n) => n.recap && n.kind === 'previous');
   const prevTile = prev
-    ? `<div class="blk"><h3>${prev.yesterday ? 'What I did yesterday' : `Last recap · ${prev.weekday}`}${noteLink(prev)}</h3>${
+    ? `<div class="blk"><h3>${prev.yesterday ? 'What I did yesterday' : `Last recap · ${prev.weekday} ${shortDate(prev.date)}`}${noteLink(prev)}</h3>${
       prev.highlights.length ? highlightList(prev.highlights) : '<small>That note has no "What I did" yet.</small>'}</div>`
     : `<div class="blk"><h3>What I did yesterday</h3><small>No recap in the last two weeks.</small></div>`;
   const nowTile = `<div class="blk"><h3>What I did today${now.exists ? noteLink(now) : ''}</h3>${now.exists
@@ -38,6 +38,7 @@ function todo(m) {
   return `<div class="blk"><h3>To do ${pen}</h3>${body}</div>`;
 }
 
+// Only blocks that lead somewhere are links; a link can't hold the vault block's own links.
 const block = (title, href, body) => href
   ? `<a class="blk" href="#${href}"><h3>${title}<span>→</span></h3>${body}</a>`
   : `<div class="blk"><h3>${title}</h3>${body}</div>`;
