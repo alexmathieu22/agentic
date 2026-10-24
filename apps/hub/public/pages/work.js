@@ -1,5 +1,11 @@
 import { esc, rel, section, feed, sessionActions, skeleton, getJSON, mentionsTicket } from '../lib.js';
 
+// Standing instructions for every session started from the board. They repeat what the global setup
+// already says, so the session behaves the same on a machine where that setup isn't loaded.
+const STARTUP = `Before changing anything:
+- If the ticket is vague or has more than one reading, run /grill-me first and settle the plan with me. Skip it when the task is clear.
+- Follow my git conventions: load the git-workflow skill before the first edit; work on a branch or worktree, never the default branch; use Conventional Commits and atomic commits; show me the commits before committing; and don't push or open a pull request unless I ask.`;
+
 const TRACKERS = { linear: 'Linear', github: 'GitHub', jira: 'Jira' };
 const boardSkeleton = (cols) => cols.map((c, i) => `<div class="col"><h3>${esc(c)}</h3>${skeleton.box('sk-card').repeat(Math.max(1, 3 - i))}</div>`).join('');
 export const skeletonView = () => `${skeleton.line('180px')}
@@ -43,7 +49,7 @@ export function render(m, state, redraw) {
   // GitHub issues have no workflow states, so their column comes from the work already linked to them.
   const column = (t) => t.state ?? (linked(t).prs.length ? 'In Review' : linked(t).sessions.length ? 'In Progress' : 'Todo');
   const start = (t) => {
-    const q = encodeURIComponent(`Pick up ${t.id}: ${t.title}\n${t.url}`);
+    const q = encodeURIComponent(`Pick up ${t.id}: ${t.title}\n${t.url}\n\n${STARTUP}`);
     const folder = cur.repo ? `&folder=${encodeURIComponent(cur.repo)}` : '';
     return `<a class="btn" href="claude://code/new?q=${q}${folder}" title="New Claude Desktop session, ticket pre-filled as the prompt">Start in Claude</a>`;
   };
