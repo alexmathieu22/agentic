@@ -1,4 +1,4 @@
-import { esc, rel, section, feed, sessionActions, skeleton } from '../lib.js';
+import { esc, rel, section, feed, sessionActions, skeleton, getJSON } from '../lib.js';
 
 const boardSkeleton = (cols) => cols.map((c, i) => `<div class="col"><h3>${esc(c)}</h3>${skeleton.box('sk-card').repeat(Math.max(1, 3 - i))}</div>`).join('');
 export const skeletonView = () => `${skeleton.line('180px')}
@@ -26,8 +26,7 @@ export function render(m, state, redraw) {
   if (cur.tracker === 'GitHub') {
     if (!loaded) {
       state.issues[cur.name] = loaded = { loading: true };
-      fetch(`/api/issues?project=${encodeURIComponent(cur.name)}`).then((r) => r.json())
-        .then((d) => { state.issues[cur.name] = d; redraw(); });
+      getJSON(`/api/issues?project=${encodeURIComponent(cur.name)}`).then((d) => { state.issues[cur.name] = d; redraw(); });
     }
     tickets = (loaded.issues ?? []).map((i) => ({ ...i, project: cur.name }));
   } else tickets = m.tickets.filter((t) => t.project.toLowerCase() === cur.name.toLowerCase());

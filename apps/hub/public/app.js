@@ -1,5 +1,5 @@
 // Shell: loads data, routes #page, switches context and theme, runs the ⌘K search.
-import { esc, rel, model } from './lib.js';
+import { esc, rel, model, getJSON } from './lib.js';
 import * as today from './pages/today.js';
 import * as work from './pages/work.js';
 import * as running from './pages/running.js';
@@ -27,7 +27,7 @@ function draw() {
 
 async function loadRunning() {
   state.running = { loading: true };
-  state.running = await fetch('/api/running').then((r) => r.json(), (e) => ({ error: e.message }));
+  state.running = await getJSON('/api/running');
   draw();
 }
 
@@ -109,7 +109,7 @@ addEventListener('hashchange', () => state.data && draw());
 
 // Before data: the skeleton of the page being opened, so it doesn't turn into a different layout.
 $('page').innerHTML = (PAGES[location.hash.slice(1)] ?? today).skeletonView();
-state.data = await (await fetch('/api/today')).json();
+state.data = await getJSON('/api/today');
 if (state.data.error) {
   $('page').innerHTML = `<p class="warn">${esc(state.data.error)}</p>`;
 } else {
