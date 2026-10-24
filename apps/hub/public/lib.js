@@ -10,6 +10,9 @@ export const pace = (r) => {
   const s = r.duration_s / (r.distance_m / 1000);
   return `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 };
+// A request that fails anywhere (network, server down, bad JSON) becomes { error } so no page waits forever.
+export const getJSON = (url) => fetch(url).then((r) => r.json()).catch((e) => ({ error: e.message }));
+
 export const link = (url, html) => (url ? `<a href="${esc(url)}" target="_blank" rel="noreferrer">${html}</a>` : html);
 
 // claude://code/continue?session=local_… reopens that exact Desktop session. It's undocumented (read from the
