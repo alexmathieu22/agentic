@@ -1,88 +1,118 @@
+// Shell: loads data, routes #page, switches context and theme, runs the ⌘K search.
+import { esc, rel, model } from './lib.js';
+import * as today from './pages/today.js';
+import * as work from './pages/work.js';
+import * as running from './pages/running.js';
+import * as budget from './pages/budget.js';
+
+const PAGES = { today, work, running, budget };
 const $ = (id) => document.getElementById(id);
-const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const state = { data: null, ctx: null, running: null, issues: {}, work: null };
 
-const rel = (iso) => {
-  const m = Math.round((Date.now() - Date.parse(iso)) / 6e4);
-  if (m < 60) return `${Math.max(m, 1)}m ago`;
-  if (m < 1440) return `${Math.round(m / 60)}h ago`;
-  return `${Math.round(m / 1440)}d ago`;
+// Running and budget pages exist only in a context that lists those panels.
+const pagesFor = (c) => ['today', 'work', ...c.panels.map((p) => p.name).filter((n) => n in PAGES)];
+
+function draw() {
+  const c = state.data.contexts[state.ctx];
+  const pages = pagesFor(c);
+  const page = pages.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'today';
+  $('ctx').innerHTML = Object.entries(state.data.contexts)
+    .map(([k, x]) => `<button data-ctx="${k}" class="${k === state.ctx ? 'on' : ''}">${esc(x.label)}</button>`).join('');
+  $('pages').innerHTML = pages.map((p) => `<a href="#${p}" class="${p === page ? 'on' : ''}">${p}</a>`).join('');
+  const date = new Date(state.data.date + 'T12:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  $('page').innerHTML = `<p class="date">${date} · ${esc(c.label)}</p>` + PAGES[page].render(model(state), state, draw);
+  if (page === 'running' && !state.running) loadRunning();
+}
+
+async function loadRunning() {
+  state.running = { loading: true };
+  state.running = await fetch('/api/running').then((r) => r.json(), (e) => ({ error: e.message }));
+  draw();
+}
+
+// Theme: follows the OS until toggled, then remembered.
+let theme;
+try { theme = localStorage.getItem('hub-theme'); } catch {}
+theme ??= matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+const applyTheme = () => {
+  document.documentElement.dataset.theme = theme;
+  $('theme').textContent = theme === 'dark' ? '☀︎ Light' : '☾ Dark';
 };
-const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+applyTheme();
 
-const link = (url, html) => (url ? `<a href="${esc(url)}" target="_blank" rel="noreferrer">${html}</a>` : html);
+// ⌘K search. One Esc closes it, and so does losing focus: some hosts swallow the first Esc and only blur.
+let query = '', sel = 0, open = false, all = [], list = [];
+const items = () => {
+  const m = model(state);
+  return [
+    ...pagesFor(m.c).filter((p) => p !== 'today').map((p) => ({ label: p[0].toUpperCase() + p.slice(1), hint: 'page', go: `#${p}` })),
+    ...m.sessions.slice(0, 40).map((s) => ({ label: s.title, hint: `${s.project} · ${rel(s.updatedAt)}`, session: s })),
+    ...m.c.attention.map((a) => ({ label: a.text, hint: a.project, url: a.url })),
+    ...m.tickets.map((t) => ({ label: `${t.id} ${t.title}`, hint: t.state, url: t.url })),
+  ];
+};
+const paint = () => {
+  const t = query.toLowerCase();
+  list = (t ? all.filter((i) => (i.label + i.hint).toLowerCase().includes(t)) : all).slice(0, 40);
+  sel = Math.min(sel, Math.max(0, list.length - 1));
+  $('res').innerHTML = list.map((i, n) => `<div class="hit ${n === sel ? 'sel' : ''}" data-n="${n}"><span>${esc(i.label)}</span><small>${esc(i.hint)}${i.session ? ' · ↵ opens in Claude' : ''}</small></div>`).join('')
+    || '<div class="hit"><small>No matches</small></div>';
+  $('res').querySelector('.sel')?.scrollIntoView({ block: 'nearest' });
+};
+const openPalette = () => { open = true; all = items(); $('pal').hidden = false; $('q').value = query; paint(); requestAnimationFrame(() => $('q').focus()); };
+const closePalette = () => { open = false; $('pal').hidden = true; query = ''; sel = 0; $('q').value = ''; };
+const choose = (i) => {
+  if (!i) return;
+  closePalette();
+  if (i.go) location.hash = i.go;
+  else if (i.url) window.open(i.url, '_blank', 'noreferrer');
+  else if (i.session) location.href = i.session.desktopId
+    ? `claude://code/continue?session=${encodeURIComponent(i.session.desktopId)}`
+    : `claude://code/new?folder=${encodeURIComponent(i.session.repo)}`;
+};
+$('q').oninput = () => { query = $('q').value; sel = 0; paint(); };
+$('q').onkeydown = (e) => {
+  if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); paint(); e.preventDefault(); }
+  if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); paint(); e.preventDefault(); }
+  if (e.key === 'Enter') choose(list[sel]);
+};
+$('q').onblur = () => { if (open) closePalette(); };
+$('res').onmousedown = (e) => e.preventDefault(); // clicking a result must not count as leaving the input
+$('res').onclick = (e) => { const h = e.target.closest('.hit[data-n]'); if (h) choose(list[+h.dataset.n]); };
+$('pal').onclick = (e) => { if (e.target === $('pal')) closePalette(); };
 
-function session(s) {
-  const cmd = `cd '${s.cwd}' && claude --resume ${s.id}`;
-  return `<div class="row"><div class="t"><span>${esc(s.title)}</span>
-    <small>${esc(s.branch || 'no branch')} · ${rel(s.updatedAt)}${s.prUrl ? ' · PR' : ''}</small></div>
-    <button data-copy="${esc(cmd)}">Resume</button></div>`;
-}
-const pr = (p) => `<div class="row"><div class="t"><span>${link(p.url, `<span class="tag ${p.role === 'reviewer' ? 'go' : ''}">${p.role === 'reviewer' ? 'review' : p.draft ? 'draft' : 'PR'}</span>#${p.number} ${esc(p.title)}`)}</span>
-  <small>${rel(p.updatedAt)}</small></div></div>`;
-const ticket = (t) => `<div class="row"><div class="t"><span>${link(t.url, `<span class="tag ${t.started ? 'go' : ''}">${esc(t.state)}</span>${esc(t.id)} ${esc(t.title)}`)}</span>
-  <small>${rel(t.updatedAt)}</small></div></div>`;
-
-function project(p) {
-  const n = (a, w) => (a.length ? `${a.length} ${w}${a.length > 1 && w !== 'PR' ? 's' : w === 'PR' && a.length > 1 ? 's' : ''}` : '');
-  const counts = [n(p.sessions, 'session'), n(p.prs, 'PR'), n(p.tickets, 'ticket')].filter(Boolean).join(' · ');
-  return `<article class="card"><h3>${esc(p.name)}</h3><div class="counts">${counts}</div>
-    ${p.tickets.map(ticket).join('')}${p.prs.map(pr).join('')}${p.sessions.slice(0, 4).map(session).join('')}</article>`;
-}
-
-function panel(p) {
-  const body = !p.ok ? `<small class="counts">${esc(p.error)}</small>`
-    : p.name === 'running' ? running(p.data)
-    : `<pre class="plain">${esc(p.data.text)}</pre>`;
-  return `<article class="card"><h3>${esc(p.name[0].toUpperCase() + p.name.slice(1))}</h3>${body}</article>`;
-}
-function running({ plannedKm, doneKm, today }) {
-  const pct = plannedKm ? Math.min(100, (doneKm / plannedKm) * 100) : 0;
-  const t = today.map((r) => `${esc(r.kind)} ${r.distance_km} km: ${esc(r.verdict)}`).join(' · ') || 'Nothing planned today';
-  return `<div class="big">${doneKm} / ${plannedKm} km</div><div class="bar"><i style="width:${pct}%"></i></div><small class="counts">${t}</small>`;
-}
-
-let data, current;
-try { current = localStorage.getItem('hub-tab'); } catch {}
-
-function render() {
-  const keys = Object.keys(data.contexts);
-  if (!keys.includes(current)) current = keys[0];
-  const c = data.contexts[current];
-  $('date').textContent = new Date(data.date + 'T12:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-  $('greeting').textContent = greeting();
-  $('tabs').innerHTML = keys.map((k) => `<button data-tab="${k}" aria-selected="${k === current}">${esc(data.contexts[k].label)}</button>`).join('');
-  $('status').innerHTML = Object.entries(c.sources)
-    .map(([k, v]) => `<span class="pill ${v.ok ? '' : 'off'}" title="${esc(v.error)}">${k}${v.ok ? '' : ': ' + esc(v.error)}</span>`).join('');
-  $('panels').innerHTML = c.panels.length ? `<h2>At a glance</h2><div class="panels">${c.panels.map(panel).join('')}</div>` : '';
-  $('attention').innerHTML = c.attention.length
-    ? `<h2>Needs you</h2><div class="next">${c.attention.map((a) => `<a ${a.url ? `href="${esc(a.url)}" target="_blank" rel="noreferrer"` : ''}>${esc(a.text)}<small>${esc(a.project)}</small></a>`).join('')}</div>`
-    : '';
-  $('projects').innerHTML = `<h2>Active projects</h2>` + (c.projects.map(project).join('') || '<p class="empty">Nothing active in the last 14 days.</p>');
-  $('notes').innerHTML = `<h2>Today in the vault</h2>` + (c.notes.map((n) =>
-    `<article class="card"><h3>${link(n.uri, esc(n.label))}</h3><div class="note">${esc(n.body) || '<i>empty</i>'}</div></article>`).join('')
-    || '<p class="empty">No notes yet today.</p>');
-}
-
-document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-tab]');
-  if (t) {
-    current = t.dataset.tab;
-    try { localStorage.setItem('hub-tab', current); } catch {}
-    return render();
-  }
-  const b = e.target.closest('[data-copy]');
-  if (!b) return;
-  navigator.clipboard.writeText(b.dataset.copy);
-  b.textContent = 'Copied';
-  setTimeout(() => (b.textContent = 'Resume'), 1200);
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && open) { e.preventDefault(); e.stopPropagation(); closePalette(); }
+}, true);
+addEventListener('keydown', (e) => {
+  if ((e.metaKey && e.key === 'k') || (e.key === '/' && !/INPUT|TEXTAREA/.test(e.target.tagName))) { e.preventDefault(); openPalette(); }
 });
 
-async function load() {
-  $('refresh').textContent = '…';
-  data = await (await fetch('/api/today')).json();
-  if (data.error) return ($('status').innerHTML = `<span class="pill off">${esc(data.error)}</span>`);
-  render();
-  $('refresh').textContent = 'Refresh';
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t.closest('[data-palette]')) return openPalette();
+  if (t.closest('#theme')) {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('hub-theme', theme); } catch {}
+    return applyTheme();
+  }
+  const ctx = t.closest('[data-ctx]');
+  if (ctx) {
+    state.ctx = ctx.dataset.ctx;
+    try { localStorage.setItem('hub-ctx', state.ctx); } catch {}
+    if (location.hash && location.hash !== '#today') location.hash = '#today';
+    return draw();
+  }
+  const w = t.closest('[data-work]');
+  if (w) { state.work = w.dataset.work; return draw(); }
+});
+addEventListener('hashchange', () => state.data && draw());
+
+state.data = await (await fetch('/api/today')).json();
+if (state.data.error) {
+  $('page').innerHTML = `<p class="warn">${esc(state.data.error)}</p>`;
+} else {
+  try { state.ctx = localStorage.getItem('hub-ctx'); } catch {}
+  if (!(state.ctx in state.data.contexts)) state.ctx = Object.keys(state.data.contexts)[0];
+  draw();
 }
-$('refresh').onclick = load;
-load();

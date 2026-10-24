@@ -8,8 +8,17 @@ node apps/hub/server.mjs        # http://localhost:4173
 node --test apps/hub/today.test.mjs
 ```
 
+Pages: **Today** (what needs you, sessions to pick up, glance blocks), **Work** (all activity, or one
+project's ticket board and its sessions), and **Running** / **Budget** in contexts that list those
+panels. ⌘K or `/` searches everything. Each page is a module in `public/pages/`.
+
 Sources live in `sources/`, one module each exporting `load()`. A failing source shows as an
 orange pill and never blanks the page.
+
+**Open in Claude** uses `claude://code/continue?session=local_…`, read from Claude Desktop's own
+link handler and its session files in `~/Library/Application Support/Claude/claude-code-sessions/`.
+It is undocumented, so it may break on a Desktop update; sessions without a Desktop id fall back to
+the documented `claude://code/new?folder=…`.
 
 | Source | Needs |
 |---|---|
