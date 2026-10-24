@@ -16,6 +16,9 @@ const PUBLIC = join(fileURLToPath(new URL('.', import.meta.url)), 'public');
 const PORT = Number(process.env.PORT ?? 4173);
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
 const PANELS = { running, budget };
+// Listening on loopback isn't enough: DNS rebinding lets any web page reach this server under its own
+// hostname and read the answers as same-origin. Only the dashboard's own Host gets a reply.
+const HOSTS = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
 
 // One failing source must not blank the dashboard; it is reported and the rest still render.
 const settle = async (name, mod) => {
@@ -44,6 +47,7 @@ async function today() {
 }
 
 createServer(async (req, res) => {
+  if (!HOSTS.has(req.headers.host)) return res.writeHead(403).end('unknown host');
   const path = new URL(req.url, 'http://x').pathname;
   if (path === '/api/today') {
     const body = await today().then(JSON.stringify, (e) => JSON.stringify({ error: String(e.message) }));
