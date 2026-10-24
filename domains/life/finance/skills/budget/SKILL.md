@@ -40,9 +40,21 @@ line, so "she paid" becomes `--paid-by <her name>`. Otherwise set it up:
    the user the line to add to their shell profile rather than editing it.
 2. **"not set up yet".** Ask for the app's address — the tailnet one; the
    public one is behind a login a script can't pass — and their name as shown
-   in the app. Run `budget setup --url <address> --me <name>`: it checks both
-   against the app and saves them. Relay its error if one is wrong.
-3. Rerun `budget balance` to confirm, then carry on with what the user asked.
+   in the app.
+3. **Prerequisite: the address answers from this machine.** Before setup, run
+   `curl -s -o /dev/null -w "%{http_code}\n" <address>`. `200` means go on.
+   `000` usually means this machine can't resolve the internal hostname: it is
+   only known to a LAN or tailnet DNS (a rewrite, a split-DNS zone) this machine
+   isn't using, or the tailnet's MagicDNS suffix shadows that zone. Confirm by
+   reaching the internal gateway's IP directly:
+   `curl -s -o /dev/null -w "%{http_code}\n" --resolve <host>:443:<gateway-ip> <address>`.
+   If that answers, the user adds `<gateway-ip> <host>` to `/etc/hosts` — a
+   system file needing sudo, so give them the line rather than editing it. It
+   goes stale if the gateway's IP changes; a DNS record for the host is the
+   lasting fix.
+4. Run `budget setup --url <address> --me <name>`: it checks both against the
+   app and saves them. Relay its error if one is wrong.
+5. Rerun `budget balance` to confirm, then carry on with what the user asked.
 
 Show each command before running it; these change the user's machine.
 
