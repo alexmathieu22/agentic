@@ -54,5 +54,6 @@ createServer(async (req, res) => {
   if (!file.startsWith(PUBLIC)) return res.writeHead(403).end();
   const body = await readFile(file).catch(() => null);
   if (body === null) return res.writeHead(404).end('not found');
-  res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(body);
+  // no-store: it's a local tool, and a stale cached script silently hides every UI change
+  res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' }).end(body);
 }).listen(PORT, '127.0.0.1', () => console.log(`hub on http://localhost:${PORT}`));
