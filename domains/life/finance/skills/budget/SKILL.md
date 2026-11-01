@@ -5,9 +5,11 @@ description: >
   shared budget with their partner — "I paid 45 at IGA", "add 30 for dinner,
   split 50/50", "my partner paid the hydro bill", "I bought her concert
   ticket", "rent is 1400 every month", "she sent me 200" — or asks "how much
-  does she owe me", "who owes who", "what did we spend this month", or wants
-  the budget CLI set up. Drives the `budget` CLI of the self-hosted budget
-  app. Not for investments, net worth or other budgeting tools.
+  does she owe me", "who owes who", "what did we spend this month", or tells
+  you about money put into or taken out of an account ("I put 500 in my
+  TFSA", "my RRSP is now at 10250"), or wants the budget CLI set up. Drives
+  the `budget` CLI of the self-hosted budget app. Not for other budgeting
+  tools.
 metadata:
   domain: life.finance
 compatibility: Requires python3 and the budget app's CLI (set up on first use)
@@ -21,7 +23,8 @@ user is stored here: names, categories and the split come from the app.
 
 ## When this applies
 
-Adding expenses, checking who owes whom, or reading a month's budget. **Not**
+Adding expenses, checking who owes whom, reading a month's budget, and
+recording deposits or balances of accounts (net worth). **Not**
 for editing or deleting an expense, recording a payback, or changing
 categories and plans — the CLI can't, so point the user to the app's
 Shared/Mine tab (✎ edits, × deletes, Settle up records a payback) or Settings.
@@ -91,8 +94,35 @@ the user mentioned.
   summarise: what's over plan, what's left, the balance. Don't paste the whole
   output back unless asked.
 
+## Accounts and deposits
+
+Money put into an account is not growth. Tell the CLI which it is, or the
+app's growth numbers (and % gain) count every deposit as profit.
+
+| The user says | Command |
+|---|---|
+| "I put 500 in my TFSA", "deposited 200" | `budget account deposit TFSA 500` (raises the balance too) |
+| "I took 100 out of …" | `budget account withdraw TFSA 100` |
+| "my TFSA is now at 10250", a new statement balance, market movement | `budget account set TFSA 10250` (balance only, no deposit) |
+| "how are my accounts doing" | `budget account list`, then report growth apart from deposits |
+
+- "On Oct 20", "last Friday", "two weeks ago": add `--date YYYY-MM-DD` to any
+  of the three, worked out from today's date. A backdated deposit leaves
+  today's balance alone; it only fixes the growth numbers.
+- If they give a new balance *and* a deposit ("I added 500 and it's now
+  10800"), run `deposit` for the 500, then `set` to the balance they gave.
+  `set` after `deposit` the same day is fine; never fold the deposit into
+  `set`.
+- Removing a wrong entry isn't possible from the CLI: point them to the
+  account's activity list in the app.
+- A deposit with no balance given: just `deposit`; don't ask for the balance.
+- Accounts only exist if created in the app (Net worth tab); the CLI can't add
+  or delete them. Names match like categories; relay the "choose from" list.
+- Only your accounts and shared ones are visible, same as the app.
+
 ## Done when
 
 Every expense the user described shows an `Added …` line (or the user was
-asked about the one ambiguity), and you've told them the balance line the CLI
-printed after the last one.
+asked about the one ambiguity) — or the account command printed its "now …"
+line — and you've told them the balance line the CLI printed after the last
+one.
