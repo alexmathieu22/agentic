@@ -2,7 +2,8 @@
 name: alex-code-review
 description: >
   Use when reviewing a diff, a branch, a pull request, or code you just wrote,
-  and when posting review comments to a pull or merge request. Wraps the
+  when posting review comments to a pull or merge request, and when fixing
+  those comments and replying to them with the commit. Wraps the
   code-review skill with my own rules: correctness before style, a failure
   scenario for every finding, and every posted comment prefixed with 🤖. Prefer
   this over code-review when both could fire.
@@ -78,8 +79,29 @@ only when it is.
   severity (must fix / consider) in the first sentence after the 🤖.
 - **Don't comment on what CI or a linter already enforces.**
 
+## Fixing what you posted
+
+Once the comments are up and I ask for the fixes, close each finding in its own
+thread.
+
+1. **One commit per finding**, Conventional Commits form, so each reply can cite
+   its own SHA. Two findings fixed by one line still get one commit; say so in
+   both replies.
+2. **Run the tests** after each fix, before moving to the next.
+3. **Push the fixes as new commits** on the pull request's branch — never
+   amend or force-push while review is open; reviewers lose their place.
+4. **Reply in the thread of each finding**, not as a new top-level comment:
+   🤖, what changed in a sentence, and the short SHA linked to the commit. For
+   a finding you decided not to fix, give the reason instead of a SHA.
+5. **Resolve nothing, approve nothing.** The reviewer closes their own threads
+   unless I ask otherwise.
+
+The draft-first rule still holds: show the commits and the replies before you
+push or post, unless I already said to go ahead.
+
 ## Done when
 
 Every must-fix has a reproducible failure scenario, any comment to be posted is
 shown to me with its 🤖, and you would be comfortable being paged if it ships
-as-is.
+as-is. When fixing, every posted finding has a reply in its thread with a
+linked SHA or a reason.
