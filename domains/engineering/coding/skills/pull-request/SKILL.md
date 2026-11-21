@@ -94,6 +94,10 @@ that applies.
 ## Notes
 Anything out of scope, deliberately deferred, or risky. Say what you are
 least sure about — it directs review where it is worth spending.
+
+## Screenshots and demo
+Frontend changes only: a screenshot of the change, and a video when it is
+interactive. See below.
 ```
 
 Rules:
@@ -105,6 +109,17 @@ Rules:
 - **Flag your own uncertainty.** "I'm unsure the retry belongs at this layer"
   gets you a better review than silence.
 - **Follow the repository's attribution convention**, if it has one.
+- **A frontend change carries a screenshot, and a video when it applies.** If the
+  diff touches anything a person sees or clicks, put a **screenshot** of the
+  changed UI under *Screenshots and demo* — always, first, one per state the
+  change adds or alters (empty, error, hover, mobile width where it matters).
+  Add a short **video** when the change is something you use rather than look at:
+  a flow, an interaction, an animation, a transition between states. A purely
+  static change (a colour, a spacing, a label) needs only the screenshot.
+  Attach them, or when you cannot attach a file, say where the file is. When you
+  cannot capture one, say so there and why, with the steps to see the feature by
+  hand; do not leave the section out. A change with nothing to see (types,
+  config, an invisible refactor) drops the section.
 
 ## Sizing
 
