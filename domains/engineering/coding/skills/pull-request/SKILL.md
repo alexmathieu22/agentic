@@ -116,7 +116,8 @@ Rules:
   Add a short **video** when the change is something you use rather than look at:
   a flow, an interaction, an animation, a transition between states. A purely
   static change (a colour, a spacing, a label) needs only the screenshot.
-  Attach them, or when you cannot attach a file, say where the file is. When you
+  Attach them to the description, never to the branch: do not commit images or
+  recordings to the repository. When you cannot attach a file, say where it is. When you
   cannot capture one, say so there and why, with the steps to see the feature by
   hand; do not leave the section out. A change with nothing to see (types,
   config, an invisible refactor) drops the section.
