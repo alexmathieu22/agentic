@@ -58,6 +58,26 @@ buries the bug.
 - Verify claims. "No behaviour change" needs the line that proves it. Run the
   tests rather than assuming they pass.
 
+## Frontend changes
+
+When the diff touches frontend code — components, styles, pages, anything a
+person sees or clicks — the pull request must include a **screenshot** of the
+changed UI, and a **video** of it being used when the change is interactive (a
+flow, an interaction, an animation). Attached to or linked from the description.
+Look for them before reading the diff in detail.
+
+- **No screenshot** is a **must fix**, whatever the code looks like: say that
+  there is no picture of the change, and what it should show — each state the
+  change adds or alters (empty, error, hover).
+- **An interactive change with no video** is a **must fix** too: say what it
+  should show — the flow from the ticket end to end. A screenshot does not stand
+  in for it. A purely static change needs only the screenshot.
+- **A screenshot or video that doesn't show the changed feature**, or shows it
+  broken, is a finding too.
+- They are evidence, not verification: still read the diff and run the checks.
+- A change with nothing to see — types, config, a refactor with no visible
+  difference — needs neither. Say so in the review rather than staying silent.
+
 ## Reporting
 
 Every finding gets the location, one sentence on the defect, and a concrete
@@ -102,6 +122,7 @@ push or post, unless I already said to go ahead.
 ## Done when
 
 Every must-fix has a reproducible failure scenario, any comment to be posted is
-shown to me with its 🤖, and you would be comfortable being paged if it ships
-as-is. When fixing, every posted finding has a reply in its thread with a
-linked SHA or a reason.
+shown to me with its 🤖, for a frontend change the screenshot (and video, when
+interactive) was there or its absence is reported, and you would be comfortable
+being paged if it ships as-is. When fixing, every posted finding has a reply in
+its thread with a linked SHA or a reason.
