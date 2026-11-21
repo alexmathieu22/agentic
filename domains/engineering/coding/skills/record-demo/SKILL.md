@@ -59,7 +59,9 @@ headless browser and let it record.
    `await page.screenshot({ path: '/tmp/factory-demo/<state>.png' })`. Then the
    video, only when the change is interactive.
 5. **Leave the files in `/tmp/factory-demo/`.** Check they are there and not
-   empty. Keep a video to under a minute.
+   empty. Keep a video to under a minute. **Never commit them to the branch**: no
+   `docs/screenshots/`, no README to hold them. They belong in the pull request
+   description, and whatever opens the pull request puts them there.
 
 ## If it fails
 
