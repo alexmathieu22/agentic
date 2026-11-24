@@ -116,6 +116,8 @@ Rules:
   Add a short **video** when the change is something you use rather than look at:
   a flow, an interaction, an animation, a transition between states. A purely
   static change (a colour, a spacing, a label) needs only the screenshot.
+  Capture them with `record-demo`, which drives the running app headless and
+  leaves the files in `/tmp/factory-demo/`.
   Attach them to the description, never to the branch: do not commit images or
   recordings to the repository. When you cannot attach a file, say where it is. When you
   cannot capture one, say so there and why, with the steps to see the feature by
